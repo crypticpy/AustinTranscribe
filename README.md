@@ -1,36 +1,143 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Meeting Transcriber
+
+A modern web application for transcribing meeting recordings using OpenAI's Whisper and GPT-4o models. Built with Next.js 14, featuring real-time audio recording, intelligent file processing, and AI-powered transcript analysis.
+
+## Features
+
+### Audio Input
+- **File Upload**: Support for MP3, WAV, M4A, WebM, and MP4 files
+- **Live Recording**: Browser-based audio capture with microphone, system audio, or commentary modes
+- **Smart Processing**: Automatic MP4-to-MP3 conversion and intelligent audio splitting for large files using FFmpeg WebAssembly
+
+### Transcription
+- **Multiple Models**: Support for Whisper and GPT-4o Audio transcription
+- **Speaker Detection**: Automatic speaker diarization and labeling
+- **Language Support**: Multi-language transcription with automatic detection
+
+### Analysis & Export
+- **AI Analysis**: GPT-4 powered meeting summaries, action items, and key points extraction
+- **Multiple Export Formats**: PDF, Markdown, and plain text
+- **Template System**: Customizable transcript templates
+
+### Storage & Management
+- **Local Storage**: All data stored in browser IndexedDB for privacy
+- **Recording Library**: Save, organize, and replay recordings
+- **Transcript History**: Full history of transcripts with search
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **UI**: Mantine v8, Tailwind CSS
+- **Audio Processing**: FFmpeg WebAssembly, WaveSurfer.js
+- **AI/ML**: OpenAI Whisper, GPT-4o Audio, GPT-4
+- **Database**: Dexie (IndexedDB wrapper)
+- **PDF Generation**: React-PDF
+- **i18n**: next-intl
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+
+- npm, yarn, or pnpm
+- OpenAI API key
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/crypticpy/AustinTranscribe.git
+cd AustinTranscribe
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Create environment file:
+```bash
+cp .env.local.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Add your OpenAI API key to `.env.local`:
+```
+OPENAI_API_KEY=your-api-key-here
+```
 
-## Learn More
+5. Start the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+6. Open [http://localhost:3000](http://localhost:3000)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+meeting-transcriber/
+├── app/                    # Next.js app router pages
+│   ├── api/               # API routes (transcription, analysis)
+│   ├── record/            # Live recording page
+│   ├── recordings/        # Saved recordings library
+│   ├── templates/         # Template management
+│   ├── transcripts/       # Transcript viewing/history
+│   └── upload/            # File upload & transcription
+├── components/            # React components
+│   ├── layout/           # Layout components (Header, Footer)
+│   ├── record/           # Recording UI components
+│   ├── transcript/       # Transcript display components
+│   └── upload/           # Upload form components
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility libraries
+│   ├── audio-processing.ts  # FFmpeg audio utilities
+│   ├── db.ts             # IndexedDB operations
+│   └── openai.ts         # OpenAI API client
+├── messages/             # i18n translation files
+├── public/               # Static assets
+│   └── ffmpeg-core/     # FFmpeg WASM files
+└── types/                # TypeScript type definitions
+```
 
-## Deploy on Vercel
+## Available Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Configuration
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `OPENAI_API_KEY` | Yes | OpenAI API key for transcription and analysis |
+
+### FFmpeg Setup
+
+The application uses FFmpeg WebAssembly for client-side audio processing. The required files are included in `public/ffmpeg-core/`:
+- `ffmpeg-core.js`
+- `ffmpeg-core.wasm`
+
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions including Docker and Azure Container Apps setup.
+
+For quick local testing, see [QUICKSTART.md](./QUICKSTART.md).
+
+## Browser Compatibility
+
+- Chrome 90+ (recommended)
+- Firefox 90+
+- Safari 15+
+- Edge 90+
+
+Note: System audio recording requires Chrome with screen sharing permissions.
+
+## License
+
+Private - All rights reserved.

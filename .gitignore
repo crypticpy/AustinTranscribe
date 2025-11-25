@@ -27,6 +27,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
 
 # vercel
 .vercel
@@ -34,3 +35,29 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE and editor folders
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# VS Code local history
+.history/
+
+# Media files (test recordings)
+*.mp4
+*.mp3
+*.wav
+*.webm
+*.ogg
+*.m4a
+
+# Claude/AI planning files
+.claude/plans/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
