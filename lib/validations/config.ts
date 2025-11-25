@@ -3,9 +3,11 @@
  *
  * Zod schemas for validating environment variables and OpenAI configuration.
  * Provides runtime validation with detailed error messages.
+ * Supports loading secrets from Azure Key Vault with environment variable fallback.
  */
 
 import { z } from 'zod';
+import { getEnvironmentWithKeyVault } from '../azure-key-vault';
 
 /**
  * Azure OpenAI API Version Schema
@@ -360,4 +362,68 @@ export function formatValidationError(error: z.ZodError): string {
 
   extractMessages(formatted as unknown as Record<string, unknown>);
   return messages.join('\n');
+}
+
+/**
+ * List of environment variable names used for configuration
+ */
+const CONFIG_ENV_VARS = [
+  'AZURE_OPENAI_API_KEY',
+  'AZURE_OPENAI_ENDPOINT',
+  'AZURE_OPENAI_API_VERSION',
+  'AZURE_OPENAI_WHISPER_DEPLOYMENT',
+  'AZURE_OPENAI_GPT4_DEPLOYMENT',
+  'AZURE_OPENAI_GPT5_DEPLOYMENT',
+  'OPENAI_API_KEY',
+  'OPENAI_ORGANIZATION_ID',
+];
+
+/**
+ * Load environment variables asynchronously with Key Vault support
+ *
+ * This function first tries to load secrets from Azure Key Vault,
+ * then falls back to environment variables for any missing values.
+ *
+ * @returns Promise with validated environment variables
+ * @throws {z.ZodError} If validation fails
+ *
+ * @example
+ * ```typescript
+ * const env = await loadEnvironmentVariablesAsync();
+ * const config = buildOpenAIConfig(env);
+ * ```
+ */
+export async function loadEnvironmentVariablesAsync(): Promise<EnvironmentVariables> {
+  // Load from Key Vault (with env var fallback)
+  const envWithKeyVault = await getEnvironmentWithKeyVault(CONFIG_ENV_VARS);
+
+  // Validate the combined configuration
+  return validEnvironmentSchema.parse(envWithKeyVault);
+}
+
+/**
+ * Safe async validation that returns success/error result
+ *
+ * @returns Result object with success flag and data or error
+ */
+export async function safeLoadEnvironmentAsync(): Promise<
+  { success: true; data: EnvironmentVariables } | { success: false; error: z.ZodError }
+> {
+  try {
+    const envWithKeyVault = await getEnvironmentWithKeyVault(CONFIG_ENV_VARS);
+    const result = validEnvironmentSchema.safeParse(envWithKeyVault);
+
+    if (result.success) {
+      return { success: true, data: result.data };
+    } else {
+      return { success: false, error: result.error };
+    }
+  } catch (error) {
+    // Handle Key Vault connection errors
+    console.warn('[Config] Key Vault unavailable, falling back to environment variables:', error);
+
+    // Fall back to synchronous validation with process.env
+    const result = safeValidateEnvironment(process.env as Record<string, string | undefined>);
+    return result;
+  }
 }

@@ -24,35 +24,35 @@ This document provides comprehensive instructions for deploying the Meeting Tran
 The application supports two build modes, controlled by environment variables:
 
 ### Standard Build (Default)
-\`\`\`bash
+```bash
 npm run build
 npm run start
-\`\`\`
+```
 - Optimized for traditional hosting (Vercel, Netlify, VPS)
 - Includes all static assets in the build output
 - Smaller build size, faster deployment
 
 ### Docker Build (Standalone Mode)
-\`\`\`bash
+```bash
 DOCKER_BUILD=true npm run build
-\`\`\`
+```
 - Creates a minimal standalone bundle
 - Optimized for Docker containers
-- Includes only required runtime files in \`.next/standalone\`
+- Includes only required runtime files in `.next/standalone`
 
 ## Standard Deployment
 
 ### Local Production Build
 
 1. **Build the application:**
-   \`\`\`bash
+   ```bash
    npm run build
-   \`\`\`
+   ```
 
 2. **Start the production server:**
-   \`\`\`bash
+   ```bash
    npm run start
-   \`\`\`
+   ```
 
 3. **Access the application:**
    - Default: http://localhost:3000
@@ -60,20 +60,20 @@ DOCKER_BUILD=true npm run build
 ### Vercel Deployment
 
 1. **Install Vercel CLI:**
-   \`\`\`bash
+   ```bash
    npm i -g vercel
-   \`\`\`
+   ```
 
 2. **Deploy:**
-   \`\`\`bash
+   ```bash
    vercel
-   \`\`\`
+   ```
 
 3. **Configure environment variables in Vercel dashboard:**
-   - \`AZURE_OPENAI_API_KEY\`
-   - \`AZURE_OPENAI_ENDPOINT\`
-   - \`AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME\`
-   - \`AZURE_OPENAI_GPT4_DEPLOYMENT_NAME\`
+   - `AZURE_OPENAI_API_KEY`
+   - `AZURE_OPENAI_ENDPOINT`
+   - `AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME`
+   - `AZURE_OPENAI_GPT4_DEPLOYMENT_NAME`
 
 ## Environment Variables
 
@@ -81,33 +81,33 @@ DOCKER_BUILD=true npm run build
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| \`AZURE_OPENAI_API_KEY\` | Azure OpenAI API key | \`abc123...\` |
-| \`AZURE_OPENAI_ENDPOINT\` | Azure OpenAI endpoint URL | \`https://your-resource.openai.azure.com/\` |
-| \`AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME\` | Whisper deployment name | \`whisper-1\` |
-| \`AZURE_OPENAI_GPT4_DEPLOYMENT_NAME\` | GPT-4 deployment name | \`gpt-4\` |
+| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key | `abc123...` |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint URL | `https://your-resource.openai.azure.com/` |
+| `AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME` | Whisper deployment name | `whisper-1` |
+| `AZURE_OPENAI_GPT4_DEPLOYMENT_NAME` | GPT-4 deployment name | `gpt-4` |
 
 ### Optional Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| \`DOCKER_BUILD\` | Enable standalone build mode | \`false\` |
-| \`ANALYZE\` | Enable bundle analyzer | \`false\` |
-| \`NEXT_TELEMETRY_DISABLED\` | Disable Next.js telemetry | \`1\` (recommended) |
-| \`PORT\` | Server port | \`3000\` |
-| \`HOSTNAME\` | Server hostname | \`0.0.0.0\` |
+| `DOCKER_BUILD` | Enable standalone build mode | `false` |
+| `ANALYZE` | Enable bundle analyzer | `false` |
+| `NEXT_TELEMETRY_DISABLED` | Disable Next.js telemetry | `1` (recommended) |
+| `PORT` | Server port | `3000` |
+| `HOSTNAME` | Server hostname | `0.0.0.0` |
 
 ### Creating .env.local
 
-For local development, create \`.env.local\`:
+For local development, create `.env.local`:
 
-\`\`\`bash
+```bash
 AZURE_OPENAI_API_KEY=your-api-key-here
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME=whisper-1
 AZURE_OPENAI_GPT4_DEPLOYMENT_NAME=gpt-4
-\`\`\`
+```
 
-**⚠️ Important:** Never commit \`.env.local\` to version control!
+**⚠️ Important:** Never commit `.env.local` to version control!
 
 ## Performance Monitoring
 
@@ -117,19 +117,19 @@ The application includes Web Vitals monitoring out of the box.
 
 In development mode, Web Vitals are logged to the console:
 
-\`\`\`javascript
+```javascript
 [Web Vitals] LCP: { value: 1250, rating: 'good', ... }
 [Web Vitals] INP: { value: 120, rating: 'good', ... }
 [Web Vitals] CLS: { value: 0.05, rating: 'good', ... }
-\`\`\`
+```
 
 ### Bundle Analysis
 
 To analyze bundle sizes:
 
-\`\`\`bash
+```bash
 npm run analyze
-\`\`\`
+```
 
 This will:
 1. Build the production bundle

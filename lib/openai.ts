@@ -14,9 +14,11 @@ import {
   validateEnvironmentVariables as validateEnvVars,
   buildOpenAIConfig,
   formatValidationError,
+  loadEnvironmentVariablesAsync,
   type OpenAIConfig,
   type EnvironmentVariables,
 } from './validations/config';
+import { isKeyVaultAvailable, getKeyVaultSummary } from './azure-key-vault';
 
 /**
  * Configuration Error Class
@@ -368,4 +370,93 @@ export function getConfigurationSummary(): {
     hasWhisperDeployment: config.provider === 'azure' ? !!config.whisperDeployment : false,
     hasGPT4Deployment: config.provider === 'azure' ? !!config.gpt4Deployment : false,
   };
+}
+
+/**
+ * Initialize configuration asynchronously with Key Vault support
+ *
+ * This function should be called during application startup to load
+ * secrets from Azure Key Vault (if configured) before other services
+ * attempt to use the OpenAI client.
+ *
+ * If Key Vault is not configured or unavailable, falls back to
+ * environment variables automatically.
+ *
+ * @throws {OpenAIConfigError} If configuration is invalid
+ *
+ * @example
+ * ```typescript
+ * // In your app startup
+ * await initializeConfiguration();
+ * const client = getOpenAIClient();
+ * ```
+ */
+export async function initializeConfiguration(): Promise<OpenAIConfig> {
+  try {
+    // Check Key Vault availability
+    const keyVaultEnabled = await isKeyVaultAvailable();
+
+    if (keyVaultEnabled) {
+      console.log('[OpenAI] Loading configuration from Key Vault...');
+
+      // Load from Key Vault with env var fallback
+      const env = await loadEnvironmentVariablesAsync();
+      const config = buildOpenAIConfig(env);
+
+      // Update cache
+      configCache = config;
+
+      console.log('[OpenAI] Configuration loaded from Key Vault', {
+        provider: config.provider,
+        keyVault: getKeyVaultSummary(),
+      });
+
+      return config;
+    } else {
+      console.log('[OpenAI] Key Vault not available, using environment variables');
+      return getConfiguration();
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const formattedError = formatValidationError(error);
+      throw new OpenAIConfigError(
+        `Configuration validation failed:\n${formattedError}\n\n` +
+        'Please ensure all required secrets are configured in Key Vault or environment variables.'
+      );
+    }
+    throw error;
+  }
+}
+
+/**
+ * Initialize configuration and validate (async version of validateEnvironment)
+ *
+ * This is the recommended way to initialize the OpenAI configuration
+ * in applications using Azure Key Vault.
+ *
+ * @throws {OpenAIConfigError} If configuration is invalid
+ */
+export async function initializeAndValidate(): Promise<void> {
+  const config = await initializeConfiguration();
+
+  // Additional warnings for optional but recommended fields
+  if (config.provider === 'azure') {
+    if (!config.whisperDeployment) {
+      console.warn(
+        '[OpenAI] Warning: AZURE_OPENAI_WHISPER_DEPLOYMENT not set. ' +
+        'Whisper transcription will not work without this.'
+      );
+    }
+    if (!config.gpt4Deployment) {
+      console.warn(
+        '[OpenAI] Warning: Analysis deployment not set. ' +
+        'GPT analysis will not work without this.'
+      );
+    }
+  }
+
+  console.log('[OpenAI] Configuration initialized and validated successfully', {
+    provider: config.provider,
+    keyVault: getKeyVaultSummary(),
+  });
 }

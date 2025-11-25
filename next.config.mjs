@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable standalone output mode for Docker deployment
+  // This creates a minimal .next/standalone folder with all required files
+  output: 'standalone',
+
+  // Experimental features
   experimental: {
     // Prevent FFmpeg WASM packages from being bundled for SSR
     serverComponentsExternalPackages: ['@ffmpeg/ffmpeg', '@ffmpeg/util', '@ffmpeg/core'],
   },
+
   webpack: (config, { isServer }) => {
     // Handle FFmpeg WASM files
     if (!isServer) {
@@ -39,6 +45,21 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(self), microphone=(self), geolocation=(), display-capture=(self)',
+          },
+        ],
+      },
+      {
+        // Cross-Origin Isolation headers for FFmpeg WASM SharedArrayBuffer support
+        // These enable multi-threaded WASM execution for better performance
+        source: '/ffmpeg-core/:path*',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
           },
         ],
       },

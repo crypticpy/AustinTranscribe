@@ -13,12 +13,12 @@
 # Install production and development dependencies
 # This stage is cached separately for faster rebuilds
 # ============================================================================
-FROM node:20-alpine AS deps
+FROM node:20.18-alpine3.19 AS deps
 
-# Install system dependencies required for native modules
+# Install system dependencies for Alpine compatibility
 # - libc6-compat: glibc compatibility for Alpine Linux
-# - python3, make, g++: required for building native npm modules
-RUN apk add --no-cache libc6-compat python3 make g++
+# NOTE: python3, make, g++ removed - no native npm modules require compilation
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
@@ -27,11 +27,12 @@ WORKDIR /app
 # If package.json hasn't changed, Docker reuses the cached layer
 COPY package.json package-lock.json ./
 
-# Install dependencies
+# Install dependencies with npm cache mount for faster builds
 # --frozen-lockfile: ensure exact versions from package-lock.json
 # --prefer-offline: use cached packages when available
 # --no-audit: skip security audit for faster installs (run separately in CI)
-RUN npm ci --frozen-lockfile --prefer-offline --no-audit
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --frozen-lockfile --prefer-offline --no-audit
 
 # ============================================================================
 # Stage 2: Builder
@@ -39,7 +40,7 @@ RUN npm ci --frozen-lockfile --prefer-offline --no-audit
 # Build the Next.js application
 # This stage includes all source code and devDependencies
 # ============================================================================
-FROM node:20-alpine AS builder
+FROM node:20.18-alpine3.19 AS builder
 
 # Install system dependencies for the build process
 RUN apk add --no-cache libc6-compat
@@ -70,7 +71,7 @@ RUN npm run build
 # Final minimal production image
 # Only includes built application and production dependencies
 # ============================================================================
-FROM node:20-alpine AS runner
+FROM node:20.18-alpine3.19 AS runner
 
 # Install dumb-init for proper signal handling
 # dumb-init ensures proper PID 1 process management for graceful shutdown

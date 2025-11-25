@@ -4,8 +4,7 @@
 # Purpose: Local development and testing with Docker
 # Usage: docker-compose up
 # ============================================================================
-
-version: '3.8'
+# NOTE: 'version' field is deprecated in Docker Compose V2 and removed
 
 services:
   # ==========================================================================
@@ -16,11 +15,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      # Build arguments (if needed for build-time customization)
-      args:
-        NODE_VERSION: '20'
       # Build for local architecture (ARM64 for M1/M2, x86_64 for Intel)
-      # Comment out platform to build for host architecture automatically
+      # Uncomment platform to force x86_64 for Azure compatibility testing
       # platform: linux/amd64
 
     # Container name
@@ -76,6 +72,14 @@ services:
     # on-failure: only restart on failure
     # unless-stopped: restart unless explicitly stopped
     restart: unless-stopped
+
+    # Security options - prevent privilege escalation
+    security_opt:
+      - no-new-privileges:true
+
+    # Drop all capabilities (container doesn't need special permissions)
+    cap_drop:
+      - ALL
 
     # Health check configuration
     # Docker will monitor application health
