@@ -20,7 +20,6 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { SettingsDialog } from "./settings-dialog";
-import { LanguageSwitcher } from "./language-switcher";
 
 /**
  * Navigation link item
@@ -120,7 +119,6 @@ export default function Header() {
 
             {/* Desktop Actions */}
             <Group gap="xs" visibleFrom="md">
-              <LanguageSwitcher />
               <ActionIcon
                 variant="default"
                 onClick={toggleTheme}
@@ -147,7 +145,6 @@ export default function Header() {
 
             {/* Mobile Actions */}
             <Group gap="xs" hiddenFrom="md">
-              <LanguageSwitcher />
               <ActionIcon
                 variant="default"
                 onClick={toggleTheme}

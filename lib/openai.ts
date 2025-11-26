@@ -134,10 +134,12 @@ export function getOpenAIClient(): OpenAI {
         apiVersion: config.apiVersion,
       });
 
-      console.log('[OpenAI] Initialized Azure OpenAI client', {
-        endpoint: config.endpoint,
-        apiVersion: config.apiVersion,
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[OpenAI] Initialized Azure OpenAI client', {
+          endpoint: config.endpoint,
+          apiVersion: config.apiVersion,
+        });
+      }
     } else {
       // Configure standard OpenAI client
       clientInstance = new OpenAI({
@@ -145,7 +147,9 @@ export function getOpenAIClient(): OpenAI {
         organization: config.organizationId,
       });
 
-      console.log('[OpenAI] Initialized standard OpenAI client');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[OpenAI] Initialized standard OpenAI client');
+      }
     }
 
     return clientInstance;
@@ -192,10 +196,12 @@ export function getTranscriptionClient(): OpenAI {
         deployment: config.whisperDeployment,
       });
 
-      console.log('[OpenAI] Initialized Azure OpenAI transcription client', {
-        endpoint: config.endpoint,
-        apiVersion: '2025-03-01-preview',
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[OpenAI] Initialized Azure OpenAI transcription client', {
+          endpoint: config.endpoint,
+          apiVersion: '2025-03-01-preview',
+        });
+      }
     } else {
       // For standard OpenAI, use the regular client
       transcriptionClientInstance = getOpenAIClient();

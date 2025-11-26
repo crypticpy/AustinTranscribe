@@ -145,26 +145,32 @@ export async function executeAnalysis(
     const recommendation = recommendStrategy(transcript);
     strategy = recommendation.strategy;
     wasAutoSelected = true;
-    console.log(`[Analysis] Auto-selected strategy: ${strategy} (${recommendation.reasoning})`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Analysis] Auto-selected strategy: ${strategy} (${recommendation.reasoning})`);
+    }
   } else {
     strategy = strategyOption;
-    console.log(`[Analysis] Using specified strategy: ${strategy}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Analysis] Using specified strategy: ${strategy}`);
+    }
   }
 
   // Get strategy metadata
   const metadata = getStrategyMetadata(strategy);
   const actualTokens = estimateTokens(transcript);
 
-  console.log('[Analysis] Starting analysis', {
-    strategy,
-    wasAutoSelected,
-    templateName: template.name,
-    templateSections: template.sections.length,
-    transcriptTokens: actualTokens,
-    runEvaluation,
-    estimatedDuration: metadata.speed,
-    estimatedApiCalls: metadata.apiCalls,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Analysis] Starting analysis', {
+      strategy,
+      wasAutoSelected,
+      templateName: template.name,
+      templateSections: template.sections.length,
+      transcriptTokens: actualTokens,
+      runEvaluation,
+      estimatedDuration: metadata.speed,
+      estimatedApiCalls: metadata.apiCalls,
+    });
+  }
 
   // Execute the appropriate strategy
   let result: BasicAnalysisResult | HybridAnalysisResult | AdvancedAnalysisResult;
@@ -206,18 +212,20 @@ export async function executeAnalysis(
   const durationMs = endTime - startTime;
   const durationSec = (durationMs / 1000).toFixed(1);
 
-  console.log('[Analysis] Analysis complete', {
-    strategy,
-    durationMs,
-    durationSec: `${durationSec}s`,
-    estimatedDuration: metadata.speed,
-    hadEvaluation: !!result.evaluation,
-    qualityScore: result.evaluation?.qualityScore || 0,
-    sectionsAnalyzed: result.results.sections.length,
-    agendaItems: result.results.agendaItems?.length || 0,
-    decisions: result.results.decisions?.length || 0,
-    actionItems: result.results.actionItems?.length || 0,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Analysis] Analysis complete', {
+      strategy,
+      durationMs,
+      durationSec: `${durationSec}s`,
+      estimatedDuration: metadata.speed,
+      hadEvaluation: !!result.evaluation,
+      qualityScore: result.evaluation?.qualityScore || 0,
+      sectionsAnalyzed: result.results.sections.length,
+      agendaItems: result.results.agendaItems?.length || 0,
+      decisions: result.results.decisions?.length || 0,
+      actionItems: result.results.actionItems?.length || 0,
+    });
+  }
 
   // Return unified result
   // Handle different property names: basic uses `promptUsed` (string), others use `promptsUsed` (string[])

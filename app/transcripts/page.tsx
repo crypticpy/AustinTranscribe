@@ -50,36 +50,34 @@ function sortTranscripts(
   sortBy: TranscriptSortField,
   sortOrder: 'asc' | 'desc'
 ): Transcript[] {
-  const sorted = [...transcripts].sort((a, b) => {
-    let aVal: string | number | Date;
-    let bVal: string | number | Date;
-
-    switch (sortBy) {
-      case 'filename':
-        aVal = a.filename.toLowerCase();
-        bVal = b.filename.toLowerCase();
-        break;
-      case 'metadata.duration':
-        aVal = a.metadata?.duration ?? 0;
-        bVal = b.metadata?.duration ?? 0;
-        break;
-      case 'metadata.fileSize':
-        aVal = a.metadata?.fileSize ?? 0;
-        bVal = b.metadata?.fileSize ?? 0;
-        break;
-      case 'createdAt':
-      default:
-        aVal = new Date(a.createdAt).getTime();
-        bVal = new Date(b.createdAt).getTime();
-        break;
-    }
-
-    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  return sorted;
+  return [...transcripts].sort((a, b) => {
+      let aVal: string | number | Date;
+      let bVal: string | number | Date;
+  
+      switch (sortBy) {
+        case 'filename':
+          aVal = a.filename.toLowerCase();
+          bVal = b.filename.toLowerCase();
+          break;
+        case 'metadata.duration':
+          aVal = a.metadata?.duration ?? 0;
+          bVal = b.metadata?.duration ?? 0;
+          break;
+        case 'metadata.fileSize':
+          aVal = a.metadata?.fileSize ?? 0;
+          bVal = b.metadata?.fileSize ?? 0;
+          break;
+        case 'createdAt':
+        default:
+          aVal = new Date(a.createdAt).getTime();
+          bVal = new Date(b.createdAt).getTime();
+          break;
+      }
+  
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
 }
 
 export default function TranscriptsPage() {

@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Paper, Stack, Group, Text, ThemeIcon, Tooltip } from "@mantine/core";
 import { Mic, Monitor, Users } from "lucide-react";
 import { getRecordingModeConfigs } from "@/lib/browser-capabilities";
@@ -42,12 +43,24 @@ export function ModeSelector({ selectedMode, onSelectMode }: ModeSelectorProps) 
         const isSelected = selectedMode === config.id;
         const isDisabled = !config.supported;
 
+        const handleKeyDown = (e: React.KeyboardEvent) => {
+          if (!isDisabled && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onSelectMode(config.id);
+          }
+        };
+
         const card = (
           <Paper
             key={config.id}
             p="lg"
             radius="md"
             withBorder
+            role="button"
+            tabIndex={isDisabled ? -1 : 0}
+            aria-label={`${config.label}: ${config.description}${isDisabled ? ` (Not available: ${config.disabledReason})` : ""}${isSelected ? " (Selected)" : ""}`}
+            aria-pressed={isSelected}
+            aria-disabled={isDisabled}
             style={{
               cursor: isDisabled ? "not-allowed" : "pointer",
               opacity: isDisabled ? 0.5 : 1,
@@ -66,6 +79,7 @@ export function ModeSelector({ selectedMode, onSelectMode }: ModeSelectorProps) 
                 onSelectMode(config.id);
               }
             }}
+            onKeyDown={handleKeyDown}
             onMouseEnter={(e) => {
               if (!isDisabled && !isSelected) {
                 e.currentTarget.style.borderColor = `var(--mantine-color-${color}-3)`;

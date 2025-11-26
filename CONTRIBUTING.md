@@ -6,12 +6,12 @@ Thank you for your interest in contributing to Meeting Transcriber! This documen
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
-- [Development Setup](#development-setup)
 - [How to Contribute](#how-to-contribute)
+- [Good First Issues](#good-first-issues)
 - [Pull Request Process](#pull-request-process)
 - [Coding Standards](#coding-standards)
-- [Testing](#testing)
-- [Documentation](#documentation)
+- [Development Tips](#development-tips)
+- [Architecture Overview](#architecture-overview)
 
 ## Code of Conduct
 
@@ -23,9 +23,9 @@ This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participatin
 
 - Node.js 20.x or higher
 - npm 10.x or higher
-- Docker (for container testing)
-- Azure CLI (for Azure deployments)
 - Git
+- Docker (optional, for container testing)
+- OpenAI API key (for testing transcription/analysis features)
 
 ### Development Setup
 
@@ -36,14 +36,14 @@ This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participatin
 2. **Clone your fork**
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/meeting-transcriber.git
+   git clone https://github.com/your-username/meeting-transcriber.git
    cd meeting-transcriber
    ```
 
 3. **Add upstream remote**
 
    ```bash
-   git remote add upstream https://github.com/ORIGINAL_OWNER/meeting-transcriber.git
+   git remote add upstream https://github.com/your-org/meeting-transcriber.git
    ```
 
 4. **Install dependencies**
@@ -110,13 +110,12 @@ We welcome feature suggestions! Please:
    - Add tests for new functionality
    - Update documentation as needed
 
-3. **Run tests and linting**
+3. **Run checks before committing**
 
    ```bash
-   npm run lint
-   npm run type-check
-   npm run test
-   npm run build
+   npm run lint        # Check for linting errors
+   npm run type-check  # Check TypeScript types
+   npm run build       # Verify production build works
    ```
 
 4. **Commit your changes**
@@ -127,6 +126,7 @@ We welcome feature suggestions! Please:
    git commit -m "feat: add audio compression feature"
    git commit -m "fix: resolve memory leak in transcription"
    git commit -m "docs: update API documentation"
+   git commit -m "refactor: simplify analysis strategy selection"
    ```
 
 5. **Push to your fork**
@@ -139,24 +139,45 @@ We welcome feature suggestions! Please:
 
    Open a PR against the `main` branch of the upstream repository.
 
+## Good First Issues
+
+Looking for a place to start? Good first issues are labeled in the repository:
+
+- **`good first issue`** - Simple, well-defined tasks ideal for newcomers
+- **`documentation`** - Help improve our docs
+- **`bug`** - Help fix bugs (check complexity in description)
+- **`enhancement`** - Add new features
+
+### Ideas for First Contributions
+
+- Improve error messages to be more helpful
+- Add missing TypeScript types
+- Write tests for existing code
+- Fix typos in documentation
+- Add accessibility improvements (ARIA labels, keyboard navigation)
+- Improve mobile responsiveness
+
 ## Pull Request Process
 
-1. **Before submitting**
-   - Ensure all tests pass
-   - Update documentation if needed
-   - Rebase on the latest `main` branch
-   - Squash commits if appropriate
+### Before Submitting
 
-2. **PR description should include**
-   - Summary of changes
-   - Related issue number(s)
-   - Testing performed
-   - Screenshots for UI changes
+- [ ] All checks pass (`npm run lint`, `npm run type-check`, `npm run build`)
+- [ ] Documentation updated if needed
+- [ ] Rebased on the latest `main` branch
+- [ ] Commits are clean and well-described
 
-3. **Review process**
-   - Maintainers will review your PR
-   - Address any requested changes
-   - Once approved, a maintainer will merge your PR
+### PR Description Should Include
+
+- Summary of changes
+- Related issue number(s) (e.g., "Fixes #123")
+- Testing performed
+- Screenshots for UI changes
+
+### Review Process
+
+1. Maintainers will review your PR within a few days
+2. Address any requested changes
+3. Once approved, a maintainer will merge your PR
 
 ## Coding Standards
 
@@ -176,75 +197,135 @@ We welcome feature suggestions! Please:
 
 ### Styling
 
-- Use Tailwind CSS for styling
+- Use Mantine components as the primary UI library
+- Use Tailwind CSS for custom styling when needed
 - Follow the existing design system
-- Ensure responsive design
+- Ensure responsive design (mobile-first)
 - Support dark mode
 
 ### File Structure
 
 ```
-app/                    # Next.js App Router pages
+app/                    # Next.js App Router pages and API routes
 components/             # React components
-├── ui/                # Reusable UI components
-├── layout/            # Layout components
-└── features/          # Feature-specific components
+├── layout/            # Layout components (header, nav)
+├── transcript/        # Transcript-related components
+├── record/            # Recording components
+├── analysis/          # Analysis components
+└── ui/                # Reusable UI components
 lib/                   # Utility functions and shared code
 ├── validations/       # Zod schemas and validators
-└── hooks/             # Custom React hooks
+└── analysis-strategies/  # AI analysis implementations
+hooks/                 # Custom React hooks
 types/                 # TypeScript type definitions
 ```
 
 ### Naming Conventions
 
-- **Files**: `kebab-case.ts` for utilities, `PascalCase.tsx` for components
-- **Components**: `PascalCase`
-- **Functions**: `camelCase`
-- **Constants**: `SCREAMING_SNAKE_CASE`
-- **Types/Interfaces**: `PascalCase`
+- **Files**: `kebab-case.ts` or `kebab-case.tsx` (all lowercase with hyphens)
+- **Components**: `PascalCase` (e.g., `TranscriptCard`)
+- **Functions**: `camelCase` (e.g., `formatDuration`)
+- **Constants**: `SCREAMING_SNAKE_CASE` (e.g., `MAX_FILE_SIZE`)
+- **Types/Interfaces**: `PascalCase` (e.g., `TranscriptSegment`)
+- **CSS classes**: Follow Tailwind conventions
 
-## Testing
+### Import Order
 
-### Running Tests
+```typescript
+// 1. React/Next.js imports
+import { useState } from 'react';
+import Link from 'next/link';
 
-```bash
-# Run all tests
-npm run test
+// 2. Third-party libraries
+import { Button, Text } from '@mantine/core';
 
-# Run tests in watch mode
-npm run test:watch
+// 3. Internal imports (using @/ alias)
+import { db } from '@/lib/db';
+import { Transcript } from '@/types';
 
-# Run tests with coverage
-npm run test:coverage
+// 4. Relative imports
+import { formatDate } from './utils';
 ```
 
-### Writing Tests
+## Development Tips
 
-- Place tests next to the code they test (`.test.ts` or `.test.tsx`)
-- Use descriptive test names
-- Test edge cases and error conditions
-- Mock external dependencies appropriately
+### Hot Reload Issues
 
-## Documentation
+If hot reload stops working:
 
-### Code Documentation
+```bash
+# Restart the dev server
+npm run dev
+```
 
-- Add JSDoc comments to public functions and interfaces
-- Document complex logic with inline comments
-- Keep comments up-to-date with code changes
+### Database Issues
 
-### README and Docs
+The app uses IndexedDB in the browser. To reset:
 
-- Update README.md for user-facing changes
-- Update DEPLOYMENT.md for deployment changes
-- Add new documentation files as needed
+1. Open DevTools (F12)
+2. Go to Application → Storage → IndexedDB
+3. Delete the database
+4. Refresh the page
 
-## Questions?
+### Testing API Changes
 
-If you have questions about contributing, feel free to:
+Use the built-in API test endpoints:
 
-- Open a discussion in the repository
-- Ask in the issues (use the "question" label)
-- Reach out to the maintainers
+- `GET /api/config/status` - Check configuration
+- `GET /api/health` - Health check
 
-Thank you for contributing!
+### Debugging
+
+- Server-side logs appear in the terminal running `npm run dev`
+- Client-side logs appear in browser DevTools Console
+- Use `console.log` liberally during development (but remove before committing)
+
+## Architecture Overview
+
+### Key Concepts
+
+1. **Client-Side Storage**: All user data (transcripts, recordings, analyses) is stored in IndexedDB using Dexie.js. Nothing is persisted server-side.
+
+2. **API Routes**: Next.js API routes handle communication with OpenAI. They process requests but don't store data.
+
+3. **Analysis Strategies**: Pluggable analysis system in `lib/analysis-strategies/` allows different approaches for different transcript lengths.
+
+4. **Theme System**: Mantine theme in `lib/mantine-theme.ts` controls the visual design.
+
+### Data Flow
+
+```
+User uploads audio
+       ↓
+Audio processed in browser (FFmpeg WASM)
+       ↓
+Audio sent to /api/transcribe → OpenAI Whisper
+       ↓
+Transcript stored in IndexedDB
+       ↓
+User requests analysis
+       ↓
+Transcript sent to /api/analyze → OpenAI GPT
+       ↓
+Analysis stored in IndexedDB
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `lib/db.ts` | Database schema and operations |
+| `lib/openai.ts` | OpenAI client configuration |
+| `lib/mantine-theme.ts` | UI theme and colors |
+| `app/api/transcribe/route.ts` | Transcription endpoint |
+| `app/api/analyze/route.ts` | Analysis endpoint |
+| `hooks/use-transcription-flow.ts` | Main transcription workflow |
+
+## Getting Help
+
+If you have questions about contributing:
+
+- **GitHub Discussions**: Ask questions and discuss ideas
+- **Issues**: For bugs and feature requests (use appropriate labels)
+
+Thank you for contributing to Meeting Transcriber!

@@ -438,7 +438,7 @@ const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProp
           style={{
             backgroundColor: isUser
               ? 'var(--logo-blue)'
-              : 'var(--mantine-color-default)',
+              : 'var(--mantine-color-gray-1)',
             color: isUser ? 'white' : 'var(--mantine-color-text)',
             wordBreak: 'break-word',
           }}
@@ -506,7 +506,7 @@ function TypingIndicator() {
         p="md"
         radius="md"
         style={{
-          backgroundColor: 'var(--mantine-color-default)',
+          backgroundColor: 'var(--mantine-color-gray-1)',
           minWidth: '80px',
         }}
       >

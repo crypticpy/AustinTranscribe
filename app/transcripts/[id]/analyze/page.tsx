@@ -469,8 +469,7 @@ export default function AnalyzePage() {
         {transcript && (
           (() => {
             const deploymentInfo = getDeploymentInfo(estimateTokens(transcript.text));
-            const isExtended = deploymentInfo.isExtended;
-            const isHighUtilization = deploymentInfo.isHighUtilization;
+            const {isExtended, isHighUtilization} = deploymentInfo;
             const isCritical = deploymentInfo.isCriticalUtilization;
 
             return (

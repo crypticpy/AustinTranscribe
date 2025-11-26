@@ -49,10 +49,13 @@ function SortableHeader({
   children,
 }: SortableHeaderProps) {
   const isActive = currentSort === field;
+  const ariaSortValue = isActive ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none';
 
   return (
     <UnstyledButton
       onClick={() => onSort(field)}
+      aria-sort={ariaSortValue}
+      aria-label={`Sort by ${children}${isActive ? `, currently sorted ${sortOrder === 'asc' ? 'ascending' : 'descending'}` : ''}`}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -63,7 +66,7 @@ function SortableHeader({
     >
       {children}
       {isActive && (
-        sortOrder === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+        sortOrder === 'asc' ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />
       )}
     </UnstyledButton>
   );

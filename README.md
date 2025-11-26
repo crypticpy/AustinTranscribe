@@ -1,16 +1,36 @@
 # Meeting Transcriber
 
-[![CI](https://github.com/YOUR_USERNAME/meeting-transcriber/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/meeting-transcriber/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A modern web application for transcribing meeting recordings using OpenAI's Whisper and GPT-4o Transcribe models, with AI-powered analysis. Built with Next.js 15, featuring real-time audio recording, intelligent file processing, and comprehensive transcript analysis.
 
-A modern web application for transcribing meeting recordings using OpenAI's Whisper and GPT-4o Transcribe engines, with AI-powered analysis via GPT-5 and GPT-4.1. Built with Next.js 14, featuring real-time audio recording, intelligent file processing, and comprehensive transcript analysis.
+**All data stays in your browser** - transcripts and recordings are stored locally in IndexedDB for privacy.
+
+## Quick Links
+
+- [Getting Started](#getting-started) - Run locally in 5 minutes
+- [Deployment Guide](./DEPLOYMENT.md) - Docker and Azure deployment
+- [Branding Guide](./BRANDING.md) - Customize for your organization
+- [Environment Setup](./lib/docs/ENV_SETUP.md) - API configuration details
+
+## Who Is This For?
+
+This application is designed for **any organization** needing a secure, private method for meeting transcription that keeps data within their own infrastructure. Built with municipal and public health requirements in mind, it's ideal for organizations that need to:
+
+- Transcribe and analyze meeting recordings without sending data to third-party servers
+- Keep sensitive meeting content private (all data stays in-browser)
+- Maintain full control by deploying on their own infrastructure
+- Customize branding for their organization
+- Work with Azure OpenAI or standard OpenAI APIs
+
+Whether you're a government agency, healthcare provider, legal firm, or any organization handling confidential discussions, this app provides enterprise-grade transcription while keeping your data under your control.
+
+The app is built for **semi-technical teams** - you don't need to be a software engineer, but familiarity with environment variables, Docker, and basic deployment concepts is helpful.
 
 ## Features
 
 ### Audio Input
-- **File Upload**: Support for MP3, WAV, M4A, WebM, and MP4 files
+- **File Upload**: Support for MP3, WAV, M4A, WebM, and MP4 files (up to 25MB per segment)
 - **Live Recording**: Browser-based audio capture with microphone, system audio, or commentary modes
-- **Smart Processing**: Automatic MP4-to-MP3 conversion and intelligent audio splitting for large files using FFmpeg WebAssembly
+- **Smart Processing**: Automatic audio format conversion and intelligent splitting for large files using FFmpeg WebAssembly
 
 ### Transcription
 - **Whisper**: OpenAI's dedicated speech-to-text model for accurate transcription
@@ -19,139 +39,171 @@ A modern web application for transcribing meeting recordings using OpenAI's Whis
 - **Language Support**: Multi-language transcription with automatic detection
 
 ### Analysis & Export
-- **GPT-5 Analysis**: Latest generation AI for comprehensive meeting summaries, action items, and key points extraction
-- **GPT-4.1 Support**: Extended context analysis for longer transcripts and detailed insights
+- **AI Analysis**: Comprehensive meeting summaries, action items, and key points extraction
+- **Extended Context**: Support for long transcripts with automatic model selection
 - **Multiple Export Formats**: PDF, Markdown, and plain text
-- **Template System**: Customizable transcript templates
+- **Template System**: Customizable analysis templates for different meeting types
 
-### Storage & Management
-- **Local Storage**: All data stored in browser IndexedDB for privacy
+### Storage & Privacy
+- **Local Storage**: All data stored in browser IndexedDB - nothing on the server
 - **Recording Library**: Save, organize, and replay recordings
-- **Transcript History**: Full history of transcripts with search
+- **Transcript History**: Full history of transcripts with search and filtering
 
 ## AI Models
 
-### Transcription Engines
-| Model | Purpose | Best For |
-|-------|---------|----------|
-| **Whisper** | Dedicated speech-to-text | Fast, accurate transcription of clear audio |
-| **GPT-4o Transcribe** | Advanced audio understanding | Complex audio with context, accents, technical jargon |
+This app works with OpenAI models through either the standard OpenAI API or Azure OpenAI Service.
 
-### Analysis LLMs
-| Model | Purpose | Best For |
-|-------|---------|----------|
-| **GPT-5** | Primary analysis engine | Meeting summaries, action items, key points extraction |
-| **GPT-4.1** | Extended context analysis | Long transcripts, detailed insights, comprehensive reports |
+### Transcription
+| Model | Best For |
+|-------|----------|
+| **whisper-1** | Fast, accurate transcription of clear audio |
+| **gpt-4o-transcribe** | Complex audio with accents, technical jargon, or background noise |
+
+### Analysis
+| Capability | Description |
+|------------|-------------|
+| **Standard Context** | Meeting summaries, action items, key decisions (128k tokens) |
+| **Extended Context** | Long transcripts, detailed analysis (up to 1M tokens with supported models) |
+
+The app automatically selects the appropriate model based on transcript length.
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **UI**: Mantine v8, Tailwind CSS
-- **Audio Processing**: FFmpeg WebAssembly, WaveSurfer.js
-- **Transcription**: OpenAI Whisper, GPT-4o Transcribe
-- **Analysis**: GPT-5, GPT-4.1 (extended context)
-- **Database**: Dexie (IndexedDB wrapper)
-- **PDF Generation**: React-PDF
-- **Infrastructure**: Docker, Azure Container Apps, Bicep IaC
+- **Audio**: FFmpeg WebAssembly, WaveSurfer.js
+- **AI**: OpenAI SDK (Azure OpenAI and standard OpenAI supported)
+- **Storage**: Dexie (IndexedDB wrapper) - browser-only
+- **PDF Export**: React-PDF
+- **Deployment**: Docker, Azure Container Apps
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- npm 10+
-- OpenAI API key (or Azure OpenAI credentials)
-- Docker (optional, for containerized deployment)
+- **Node.js 20+** - [Download here](https://nodejs.org/)
+- **npm 10+** - Comes with Node.js
+- **OpenAI API access** - Either:
+  - [OpenAI API key](https://platform.openai.com/api-keys), OR
+  - [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/cognitive-services/openai-service) credentials
+- **Docker** (optional) - For containerized deployment
 
 ### Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/meeting-transcriber.git
+# 1. Clone the repository
+git clone https://github.com/your-org/meeting-transcriber.git
 cd meeting-transcriber
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Set up environment
+# 3. Set up environment variables
 cp .env.local.example .env.local
-# Edit .env.local with your API credentials
+# Edit .env.local with your API credentials (see below)
 
-# Start development server
+# 4. Start the development server
 npm run dev
 
-# Open http://localhost:3000
+# 5. Open http://localhost:3000 in your browser
 ```
 
-### Configuration
+### Configuration Options
 
-#### Standard OpenAI
+#### Option A: Standard OpenAI (Simplest)
+
+Add your OpenAI API key to `.env.local`:
 
 ```env
 OPENAI_API_KEY=sk-your-api-key-here
 ```
 
-#### Azure OpenAI (Recommended for Production)
+That's it! The app will use `whisper-1` for transcription and `gpt-4o` for analysis.
+
+#### Option B: Azure OpenAI (Recommended for Production)
+
+Azure OpenAI provides enterprise features like private endpoints, managed identity, and SLA guarantees.
 
 ```env
+# Required
 AZURE_OPENAI_API_KEY=your-azure-api-key
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_VERSION=2024-08-01-preview
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
 
-# Transcription deployments
-AZURE_OPENAI_WHISPER_DEPLOYMENT=whisper-1        # Whisper model for speech-to-text
-AZURE_OPENAI_GPT4O_TRANSCRIBE_DEPLOYMENT=gpt-4o-transcribe  # GPT-4o for audio transcription
+# Transcription deployment (deploy whisper-1 or gpt-4o-transcribe in Azure)
+AZURE_OPENAI_WHISPER_DEPLOYMENT=your-whisper-deployment-name
 
-# Analysis deployments (choose one or both)
-AZURE_OPENAI_GPT5_DEPLOYMENT=gpt-5               # GPT-5 for analysis
-AZURE_OPENAI_GPT41_DEPLOYMENT=gpt-4.1            # GPT-4.1 for extended context analysis
+# Analysis deployment (deploy gpt-4o or similar in Azure)
+AZURE_OPENAI_GPT4_DEPLOYMENT=your-gpt4o-deployment-name
+
+# Optional: Extended context deployment for long transcripts
+AZURE_OPENAI_EXTENDED_GPT_DEPLOYMENT=your-extended-context-deployment
 ```
 
-#### Azure Key Vault (Optional)
-
-For production deployments, store secrets in Azure Key Vault:
-
-```env
-AZURE_KEY_VAULT_URL=https://your-vault.vault.azure.net/
-```
+See [Environment Setup](./lib/docs/ENV_SETUP.md) for detailed configuration options.
 
 ## Deployment
 
-### Docker
+### Docker (Recommended)
+
+Build and run the containerized application:
 
 ```bash
-# Build and run locally
+# Build the Docker image
+docker build -t meeting-transcriber .
+
+# Run with environment variables
+docker run -p 3000:3000 \
+  -e OPENAI_API_KEY=your-key \
+  meeting-transcriber
+```
+
+Or use Docker Compose:
+
+```bash
+# Copy and configure environment
+cp .env.local.example .env.local
+# Edit .env.local with your credentials
+
+# Start the application
 docker compose up
-
-# Build for AMD64 (Azure)
-docker buildx build --platform linux/amd64 -t meeting-transcriber:latest .
-
-# Push to registry
-docker tag meeting-transcriber:latest your-registry.azurecr.io/meeting-transcriber:latest
-docker push your-registry.azurecr.io/meeting-transcriber:latest
 ```
 
 ### Azure Container Apps
 
-Deploy using Bicep Infrastructure-as-Code:
+For production deployment on Azure:
 
 ```bash
-# Login to Azure
-az login
-
-# Deploy infrastructure
+# Deploy using the provided scripts
 cd infrastructure
 ./deploy.sh prod
-
-# Add secrets to Key Vault
-az keyvault secret set --vault-name kv-mtranscriber-prod \
-  --name azure-openai-api-key --value 'YOUR_KEY'
-az keyvault secret set --vault-name kv-mtranscriber-prod \
-  --name azure-openai-endpoint --value 'YOUR_ENDPOINT'
 ```
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment instructions including:
+- Multi-architecture Docker builds
+- Azure Container Apps setup
+- Environment variable configuration
+- Health checks and monitoring
+
+## Adapting for Your Organization
+
+This application is designed to be easily customized:
+
+### Branding
+- Replace logos and colors with your organization's branding
+- Customize the application name and metadata
+- See [BRANDING.md](./BRANDING.md) for step-by-step instructions
+
+### Templates
+- Create custom analysis templates for your meeting types
+- Configure default outputs (summaries, action items, etc.)
+- Templates are stored in-browser and can be exported/imported
+
+### Deployment
+- Deploy on any infrastructure that supports Docker
+- Use Azure, AWS, GCP, or on-premises servers
+- Configure secrets via environment variables or Azure Key Vault
 
 ## Development
 
@@ -159,12 +211,11 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server |
+| `npm run dev` | Start development server with hot reload |
 | `npm run build` | Build for production |
-| `npm run start` | Start production server |
+| `npm start` | Start production server |
 | `npm run lint` | Run ESLint |
 | `npm run type-check` | Run TypeScript type checking |
-| `npm run test` | Run tests |
 
 ### Using Make
 
@@ -173,62 +224,51 @@ make help          # Show all available commands
 make dev           # Start development server
 make build         # Build production bundle
 make docker-build  # Build Docker image
-make deploy        # Build, push, and deploy to Azure
-```
-
-### Docker Development
-
-```bash
-# Development with hot-reload
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
-
-# Production-like local testing
-docker compose -f docker-compose.yml -f docker-compose.production.yml up
+make deploy        # Build and deploy to Azure
 ```
 
 ## Project Structure
 
 ```
 meeting-transcriber/
-├── app/                    # Next.js app router pages
-│   ├── api/               # API routes (transcription, analysis)
+├── app/                    # Next.js pages and API routes
+│   ├── api/               # Backend API endpoints
+│   │   ├── transcribe/    # Audio transcription
+│   │   ├── analyze/       # AI analysis
+│   │   └── chat/          # Q&A with transcripts
 │   ├── record/            # Live recording page
-│   ├── recordings/        # Saved recordings library
+│   ├── recordings/        # Recording library
 │   ├── templates/         # Template management
-│   ├── transcripts/       # Transcript viewing/history
-│   └── upload/            # File upload & transcription
-├── components/            # React components
+│   ├── transcripts/       # Transcript viewing
+│   └── upload/            # File upload
+├── components/            # React UI components
 ├── hooks/                 # Custom React hooks
 ├── lib/                   # Utility libraries
-│   ├── azure-key-vault.ts # Key Vault integration
-│   ├── openai.ts          # OpenAI API client
-│   └── validations/       # Zod validation schemas
-├── infrastructure/        # Azure Bicep IaC
-│   ├── main.bicep        # Main deployment template
-│   ├── modules/          # Bicep modules
-│   └── parameters/       # Environment parameters
-├── .github/              # GitHub workflows and templates
-└── types/                # TypeScript type definitions
+│   ├── openai.ts          # OpenAI client configuration
+│   ├── db.ts              # IndexedDB operations
+│   └── validations/       # Input validation
+├── infrastructure/        # Azure deployment (Bicep)
+└── types/                 # TypeScript definitions
 ```
 
 ## Browser Compatibility
 
-- Chrome 90+ (recommended)
-- Firefox 90+
-- Safari 15+
-- Edge 90+
+| Browser | Version | Notes |
+|---------|---------|-------|
+| Chrome | 90+ | Recommended - full feature support |
+| Edge | 90+ | Full support |
+| Firefox | 90+ | Full support |
+| Safari | 15+ | Full support |
 
-Note: System audio recording requires Chrome with screen sharing permissions.
+**Note**: System audio recording requires Chrome/Edge with screen sharing permissions.
 
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
-Before contributing, please read our [Code of Conduct](./CODE_OF_CONDUCT.md).
-
 ## Security
 
-For security issues, please see [SECURITY.md](./SECURITY.md) for our security policy and how to report vulnerabilities.
+For security concerns, please see [SECURITY.md](./SECURITY.md) for our security policy and vulnerability reporting process.
 
 ## License
 

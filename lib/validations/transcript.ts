@@ -327,10 +327,7 @@ export const fileUploadSchema = z
     }
 
     ctx.addIssue({
-      code: z.ZodIssueCode.too_big,
-      maximum: MAX_FILE_SIZE,
-      inclusive: true,
-      type: 'array',
+      code: z.ZodIssueCode.custom,
       path: ['size'],
       message: `File cannot exceed ${maxSizeMB}MB`,
     });

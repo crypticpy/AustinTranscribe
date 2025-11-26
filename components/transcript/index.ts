@@ -1,5 +1,5 @@
-export { TranscriptCard } from './TranscriptCard';
-export type { TranscriptCardProps } from './TranscriptCard';
+export { TranscriptCard } from './transcript-card';
+export type { TranscriptCardProps } from './transcript-card';
 
-export { TranscriptTable } from './TranscriptTable';
-export type { TranscriptTableProps } from './TranscriptTable';
+export { TranscriptTable } from './transcript-table';
+export type { TranscriptTableProps } from './transcript-table';

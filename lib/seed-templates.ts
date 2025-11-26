@@ -3077,13 +3077,17 @@ export async function seedDefaultTemplates(): Promise<void> {
       if (!previouslySeeded) {
         markAsSeeded();
       }
-      console.log('[Templates] All built-in templates already present; no seeding required.');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Templates] All built-in templates already present; no seeding required.');
+      }
       return;
     }
 
-    console.log('[Templates] Seeding missing built-in templates...', {
-      missing: missingTemplatesInput.map(template => template.name),
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Templates] Seeding missing built-in templates...', {
+        missing: missingTemplatesInput.map(template => template.name),
+      });
+    }
 
     const templatesToInsert: Template[] = missingTemplatesInput.map(template => ({
       ...template,
@@ -3095,7 +3099,9 @@ export async function seedDefaultTemplates(): Promise<void> {
 
     markAsSeeded();
 
-    console.log(`[Templates] Seeded ${templatesToInsert.length} built-in template(s).`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Templates] Seeded ${templatesToInsert.length} built-in template(s).`);
+    }
   } catch (error) {
     console.error('Error seeding default templates:', error);
     throw new Error(
@@ -3131,7 +3137,9 @@ export async function resetDefaultTemplates(): Promise<void> {
     // Reset seeding status
     localStorage.removeItem(SEEDING_STATUS_KEY);
 
-    console.log('Default templates reset successfully');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Default templates reset successfully');
+    }
   } catch (error) {
     console.error('Error resetting default templates:', error);
     throw new Error(

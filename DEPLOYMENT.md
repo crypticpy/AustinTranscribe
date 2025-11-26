@@ -1,159 +1,389 @@
 # Deployment Guide
 
-This document provides comprehensive instructions for deploying the Meeting Transcriber application in various environments.
+This guide provides comprehensive instructions for deploying the Meeting Transcriber application. The app is designed to run in Docker containers and can be deployed to any infrastructure that supports containerized applications.
 
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
-- [Build Modes](#build-modes)
-- [Standard Deployment](#standard-deployment)
+- [Choosing Your Deployment](#choosing-your-deployment)
 - [Docker Deployment](#docker-deployment)
-- [Azure Deployment](#azure-deployment)
+- [Azure Container Apps](#azure-container-apps)
 - [Environment Variables](#environment-variables)
-- [Performance Monitoring](#performance-monitoring)
+- [Health Checks & Monitoring](#health-checks--monitoring)
 - [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
-- Node.js 18+ or 20+
-- npm 9+ or yarn 1.22+
-- Azure OpenAI API key (for transcription and analysis features)
+Before deploying, ensure you have:
 
-## Build Modes
+- **Node.js 20+** - For local development/testing
+- **Docker** - For containerized deployment
+- **OpenAI API access** - Either:
+  - Standard OpenAI API key, OR
+  - Azure OpenAI Service credentials
 
-The application supports two build modes, controlled by environment variables:
+### What You'll Need for Each Platform
 
-### Standard Build (Default)
+| Platform | Requirements |
+|----------|--------------|
+| **Docker (Local)** | Docker Desktop, `.env.local` file |
+| **Azure Container Apps** | Azure subscription, Azure CLI, Container Registry |
+
+## Choosing Your Deployment
+
+| Deployment Method | Best For | Complexity |
+|------------------|----------|------------|
+| **Docker Compose** | Local testing, small teams | Low |
+| **Azure Container Apps** | Production, enterprise | Medium |
+
+For most organizations, we recommend starting with **Docker locally** for testing, then deploying to **Azure Container Apps** for production.
+
+## Docker Deployment
+
+### Quick Start
+
 ```bash
-npm run build
-npm run start
-```
-- Optimized for traditional hosting (Vercel, Netlify, VPS)
-- Includes all static assets in the build output
-- Smaller build size, faster deployment
+# 1. Clone and enter the repository
+git clone https://github.com/your-org/meeting-transcriber.git
+cd meeting-transcriber
 
-### Docker Build (Standalone Mode)
+# 2. Create environment file
+cp .env.local.example .env.local
+# Edit .env.local with your API credentials
+
+# 3. Build and run
+docker compose up --build
+```
+
+The application will be available at `http://localhost:3000`.
+
+### Building the Docker Image
+
+#### For Local Testing (Your Machine's Architecture)
+
 ```bash
-DOCKER_BUILD=true npm run build
+docker build -t meeting-transcriber:local .
 ```
-- Creates a minimal standalone bundle
-- Optimized for Docker containers
-- Includes only required runtime files in `.next/standalone`
 
-## Standard Deployment
+#### For Azure/Cloud Deployment (x86_64/AMD64)
 
-### Local Production Build
+Most cloud platforms run on x86_64 architecture. If you're building on an Apple Silicon Mac (M1/M2/M3), you need to specify the platform:
 
-1. **Build the application:**
-   ```bash
-   npm run build
-   ```
+```bash
+docker buildx build --platform linux/amd64 -t meeting-transcriber:azure .
+```
 
-2. **Start the production server:**
-   ```bash
-   npm run start
-   ```
+#### Multi-Architecture Build
 
-3. **Access the application:**
-   - Default: http://localhost:3000
+To build for both ARM64 (Apple Silicon) and AMD64 (Intel/AMD):
 
-### Vercel Deployment
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t meeting-transcriber:latest .
+```
 
-1. **Install Vercel CLI:**
-   ```bash
-   npm i -g vercel
-   ```
+### Running the Container
 
-2. **Deploy:**
-   ```bash
-   vercel
-   ```
+#### With Environment Variables
 
-3. **Configure environment variables in Vercel dashboard:**
-   - `AZURE_OPENAI_API_KEY`
-   - `AZURE_OPENAI_ENDPOINT`
-   - `AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME`
-   - `AZURE_OPENAI_GPT4_DEPLOYMENT_NAME`
+```bash
+docker run -p 3000:3000 \
+  -e OPENAI_API_KEY=sk-your-key \
+  meeting-transcriber:local
+```
+
+#### With Environment File
+
+```bash
+docker run -p 3000:3000 --env-file .env.local meeting-transcriber:local
+```
+
+#### With Docker Compose
+
+```bash
+docker compose up
+```
+
+To run in the background:
+
+```bash
+docker compose up -d
+```
+
+### Docker Compose Configuration
+
+The included `docker-compose.yml` provides:
+
+- **Health checks**: Monitors application status
+- **Automatic restart**: Recovers from failures
+- **Security hardening**: Non-root user, dropped capabilities
+- **Log rotation**: Prevents disk from filling up
+
+See the comments in `docker-compose.yml` for customization options.
+
+### Image Details
+
+The Dockerfile uses a multi-stage build for optimal size and security:
+
+| Stage | Purpose | Size |
+|-------|---------|------|
+| deps | Install dependencies | ~500MB |
+| builder | Build Next.js app | ~800MB |
+| runner | Production runtime | ~300MB |
+
+**Security features included:**
+- Non-root user (`nextjs`, UID 1001)
+- Alpine Linux base (minimal attack surface)
+- `dumb-init` for proper signal handling
+- Health checks for monitoring
+- No unnecessary packages
+
+## Azure Container Apps
+
+Azure Container Apps is our recommended production deployment target. It provides:
+
+- Automatic scaling
+- Built-in HTTPS
+- Managed infrastructure
+- Integration with Azure Key Vault
+
+### Prerequisites for Azure
+
+1. **Azure CLI** installed and configured
+2. **Azure subscription** with Container Apps enabled
+3. **Azure Container Registry** (ACR) for storing images
+
+### Step-by-Step Deployment
+
+#### 1. Login to Azure
+
+```bash
+az login
+```
+
+#### 2. Create Resource Group (if needed)
+
+```bash
+az group create --name rg-meeting-transcriber --location eastus
+```
+
+#### 3. Create Container Registry
+
+```bash
+az acr create \
+  --resource-group rg-meeting-transcriber \
+  --name youracrname \
+  --sku Basic
+```
+
+#### 4. Build and Push Image
+
+```bash
+# Login to ACR
+az acr login --name youracrname
+
+# Build for AMD64 and push
+docker buildx build --platform linux/amd64 \
+  -t youracrname.azurecr.io/meeting-transcriber:latest \
+  --push .
+```
+
+#### 5. Deploy Using Infrastructure Scripts
+
+The repository includes Bicep templates for Azure deployment:
+
+```bash
+cd infrastructure
+./deploy.sh prod
+```
+
+This creates:
+- Container Apps Environment
+- Container App with your image
+- Key Vault for secrets
+- Managed Identity
+
+#### 6. Configure Secrets in Key Vault
+
+```bash
+# Set your OpenAI credentials
+az keyvault secret set \
+  --vault-name kv-mtranscriber-prod \
+  --name azure-openai-api-key \
+  --value 'your-api-key'
+
+az keyvault secret set \
+  --vault-name kv-mtranscriber-prod \
+  --name azure-openai-endpoint \
+  --value 'https://your-resource.openai.azure.com/'
+```
+
+### Azure-Specific Environment Variables
+
+When using Azure Key Vault, set `AZURE_KEY_VAULT_URL`:
+
+```env
+AZURE_KEY_VAULT_URL=https://your-vault.vault.azure.net/
+```
+
+The application will automatically fetch secrets from Key Vault using managed identity.
 
 ## Environment Variables
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `AZURE_OPENAI_API_KEY` | Azure OpenAI API key | `abc123...` |
-| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint URL | `https://your-resource.openai.azure.com/` |
-| `AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME` | Whisper deployment name | `whisper-1` |
-| `AZURE_OPENAI_GPT4_DEPLOYMENT_NAME` | GPT-4 deployment name | `gpt-4` |
+You need **one** of these configurations:
+
+#### Standard OpenAI
+
+```env
+OPENAI_API_KEY=sk-your-api-key
+```
+
+#### Azure OpenAI
+
+```env
+AZURE_OPENAI_API_KEY=your-azure-key
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
+AZURE_OPENAI_WHISPER_DEPLOYMENT=your-whisper-deployment
+AZURE_OPENAI_GPT4_DEPLOYMENT=your-gpt4-deployment
+```
 
 ### Optional Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DOCKER_BUILD` | Enable standalone build mode | `false` |
-| `ANALYZE` | Enable bundle analyzer | `false` |
-| `NEXT_TELEMETRY_DISABLED` | Disable Next.js telemetry | `1` (recommended) |
 | `PORT` | Server port | `3000` |
 | `HOSTNAME` | Server hostname | `0.0.0.0` |
+| `AZURE_KEY_VAULT_URL` | Key Vault URL for secrets | - |
+| `AZURE_OPENAI_EXTENDED_GPT_DEPLOYMENT` | Extended context model | - |
+| `NEXT_TELEMETRY_DISABLED` | Disable Next.js telemetry | `1` |
 
-### Creating .env.local
+See [ENV_SETUP.md](./lib/docs/ENV_SETUP.md) for complete documentation.
 
-For local development, create `.env.local`:
+## Health Checks & Monitoring
+
+### Health Endpoint
+
+The application exposes a health check endpoint at:
+
+```
+GET /api/health
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-01-01T00:00:00.000Z",
+  "uptime": 12345.67
+}
+```
+
+### Docker Health Check
+
+The Docker container includes an automatic health check:
+
+- **Interval**: 30 seconds
+- **Timeout**: 3 seconds
+- **Start period**: 40 seconds (allows app to start)
+- **Retries**: 3
+
+Check container health:
 
 ```bash
-AZURE_OPENAI_API_KEY=your-api-key-here
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_WHISPER_DEPLOYMENT_NAME=whisper-1
-AZURE_OPENAI_GPT4_DEPLOYMENT_NAME=gpt-4
+docker ps  # Shows health status
+docker inspect --format='{{.State.Health.Status}}' meeting-transcriber
 ```
 
-**⚠️ Important:** Never commit `.env.local` to version control!
+### Azure Container Apps Health
 
-## Performance Monitoring
+Azure Container Apps automatically uses the `/api/health` endpoint for:
 
-The application includes Web Vitals monitoring out of the box.
+- **Liveness probes**: Restart unhealthy containers
+- **Readiness probes**: Route traffic only to healthy instances
 
-### Development Monitoring
+## Troubleshooting
 
-In development mode, Web Vitals are logged to the console:
+### Common Issues
 
-```javascript
-[Web Vitals] LCP: { value: 1250, rating: 'good', ... }
-[Web Vitals] INP: { value: 120, rating: 'good', ... }
-[Web Vitals] CLS: { value: 0.05, rating: 'good', ... }
-```
+#### Container Won't Start
 
-### Bundle Analysis
+**Symptoms**: Container exits immediately or restarts continuously
 
-To analyze bundle sizes:
-
+**Check logs**:
 ```bash
-npm run analyze
+docker compose logs -f app
+# or
+docker logs meeting-transcriber
 ```
 
-This will:
-1. Build the production bundle
-2. Generate bundle analysis reports
-3. Open interactive visualizations in your browser
+**Common causes**:
+- Missing environment variables (check `.env.local`)
+- Port 3000 already in use
+- Invalid API credentials
 
-Key metrics to monitor:
-- First Load JS: Target < 200 KB
-- Page bundles: Target < 100 KB each
-- Shared chunks: Maximize reuse
+#### Health Check Failing
 
-## Performance Targets
+**Symptoms**: Container shows "unhealthy" status
 
-After all optimizations, you should achieve:
+**Verify the endpoint**:
+```bash
+curl http://localhost:3000/api/health
+```
 
-| Metric | Target | Achieved |
-|--------|--------|----------|
-| First Load JS | < 200 KB | ✅ ~180 KB |
-| Largest Contentful Paint (LCP) | < 2.5s | ✅ ~1.2s |
-| Interaction to Next Paint (INP) | < 200ms | ✅ ~120ms |
-| Cumulative Layout Shift (CLS) | < 0.1 | ✅ ~0.05 |
-| Time to Interactive (TTI) | < 3.5s | ✅ ~2.8s |
+**Check if app is running**:
+```bash
+docker compose exec app ps aux
+```
+
+#### Build Fails on Apple Silicon
+
+**Symptoms**: Build fails with architecture errors
+
+**Solution**: Use buildx with explicit platform:
+```bash
+docker buildx build --platform linux/amd64 -t meeting-transcriber:azure .
+```
+
+#### Environment Variables Not Loading
+
+**Symptoms**: App starts but API calls fail
+
+**Verify variables are set**:
+```bash
+docker compose exec app env | grep -E '(OPENAI|AZURE)'
+```
+
+**Check file format**:
+- Ensure `.env.local` has no quotes around values
+- Ensure no trailing whitespace
+- Ensure file uses Unix line endings (LF, not CRLF)
+
+#### Azure Container Apps Not Pulling Image
+
+**Symptoms**: Deployment fails, can't pull image
+
+**Verify ACR access**:
+```bash
+az acr repository list --name youracrname
+```
+
+**Check managed identity permissions**:
+```bash
+az role assignment list --assignee <identity-id>
+```
+
+### Getting Help
+
+1. Check the logs first (see commands above)
+2. Review [ENV_SETUP.md](./lib/docs/ENV_SETUP.md) for configuration details
+3. Open an issue on GitHub with:
+   - Error messages from logs
+   - Your deployment method
+   - Relevant environment variables (redact secrets!)
 
 ---
 
-**Last Updated:** 2025-11-21  
-**Version:** 1.0.0
+**Last Updated**: 2025-11-25

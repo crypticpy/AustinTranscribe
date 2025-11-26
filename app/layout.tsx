@@ -18,9 +18,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Meeting Transcriber - Austin Public Health",
-  description: "AI-powered meeting transcription, summarization, and action item extraction using Azure OpenAI.",
-  keywords: ["transcription", "meetings", "AI", "Azure OpenAI", "Austin Public Health"],
+  title: "Meeting Transcriber",
+  description: "AI-powered meeting transcription, summarization, and action item extraction using OpenAI.",
+  keywords: ["transcription", "meetings", "AI", "OpenAI", "Whisper", "GPT"],
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },

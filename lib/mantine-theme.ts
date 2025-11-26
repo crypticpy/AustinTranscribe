@@ -1,15 +1,17 @@
 /**
  * Mantine Theme Configuration for Meeting Transcriber
  *
- * Implements Austin Public Health brand colors and custom design system
+ * Defines the application's color palette and design system
  * with full support for light and dark modes.
+ *
+ * To customize branding for your organization, see BRANDING.md
  */
 
 import { createTheme, MantineColorsTuple } from '@mantine/core';
 
 /**
- * Austin Public Health Brand Colors
- * Official palette with HSL values converted to hex
+ * Brand Colors
+ * Primary color palette - customize these for your organization's branding
  */
 const aphBlue: MantineColorsTuple = [
   '#EEF0FB',  // lightest
@@ -122,7 +124,7 @@ const aphGray: MantineColorsTuple = [
  * Main Mantine Theme
  */
 export const mantineTheme = createTheme({
-  // Austin Public Health Brand Identity
+  // Primary brand color - change this to customize your theme
   primaryColor: 'aphBlue',
   primaryShade: 6,
 
@@ -270,7 +272,7 @@ export const mantineTheme = createTheme({
     containerMaxWidth: '1280px',
     headerHeight: '64px',
 
-    // Austin brand specific
+    // Brand-specific colors (customize for your organization)
     aphBrandColors: {
       logoBlue: '#44499C',
       logoGreen: '#009F4D',
