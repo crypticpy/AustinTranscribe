@@ -93,9 +93,9 @@ export function SearchBar({
       aria-label="Transcript search"
       p="md"
       style={{
-        backgroundColor: 'var(--mantine-color-gray-1)',
+        backgroundColor: 'var(--mantine-color-default)',
         borderRadius: 'var(--mantine-radius-md)',
-        border: '1px solid var(--mantine-color-gray-3)',
+        border: '1px solid var(--mantine-color-default-border)',
       }}
     >
       <Group gap="sm" wrap="nowrap">
@@ -135,7 +135,7 @@ export function SearchBar({
             id="search-results-count"
             size="sm"
             fw={500}
-            c={hasMatches ? 'dark' : 'dimmed'}
+            c={hasMatches ? undefined : 'dimmed'}
             style={{
               minWidth: 100,
               textAlign: 'center',
