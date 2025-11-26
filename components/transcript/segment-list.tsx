@@ -93,11 +93,11 @@ const SegmentItem = memo(function SegmentItem({
         gap: 'var(--mantine-spacing-md)',
         borderRadius: 'var(--mantine-radius-md)',
         border: isActive
-          ? '1px solid var(--mantine-color-gray-4)'
+          ? '1px solid var(--mantine-color-default-border)'
           : '1px solid transparent',
         backgroundColor: isActive
-          ? 'var(--mantine-color-gray-1)'
-          : 'var(--mantine-color-white)',
+          ? 'var(--mantine-color-default-hover)'
+          : 'var(--mantine-color-default)',
         cursor: onClick ? 'pointer' : 'default',
         transition: 'all 150ms ease',
         minHeight: 60,
@@ -147,7 +147,7 @@ const SegmentItem = memo(function SegmentItem({
           size="sm"
           style={{
             lineHeight: 1.6,
-            color: isActive ? 'var(--mantine-color-black)' : 'var(--mantine-color-gray-8)',
+            color: 'var(--mantine-color-text)',
             fontWeight: isActive ? 500 : 400,
           }}
         >
@@ -557,7 +557,7 @@ const VirtualizedCompactSegmentList = memo(function VirtualizedCompactSegmentLis
                   borderRadius: 'var(--mantine-radius-sm)',
                   cursor: 'pointer',
                   transition: 'background-color 150ms ease',
-                  backgroundColor: isActive ? 'var(--mantine-color-gray-1)' : 'transparent',
+                  backgroundColor: isActive ? 'var(--mantine-color-default-hover)' : 'transparent',
                   borderLeft: isActive ? '2px solid var(--aph-blue)' : 'none',
                   paddingLeft: isActive ? 'calc(var(--mantine-spacing-sm) - 2px)' : 'var(--mantine-spacing-sm)',
                 }}
@@ -653,7 +653,7 @@ export const CompactSegmentList = memo(function CompactSegmentList({
                 borderRadius: 'var(--mantine-radius-sm)',
                 cursor: 'pointer',
                 transition: 'background-color 150ms ease',
-                backgroundColor: isActive ? 'var(--mantine-color-gray-1)' : 'transparent',
+                backgroundColor: isActive ? 'var(--mantine-color-default-hover)' : 'transparent',
                 borderLeft: isActive ? '2px solid var(--aph-blue)' : 'none',
                 paddingLeft: isActive ? 'calc(var(--mantine-spacing-sm) - 2px)' : 'var(--mantine-spacing-sm)',
               }}
@@ -745,11 +745,11 @@ export const GroupedSegmentList = memo(function GroupedSegmentList({
                   position: 'sticky',
                   top: 0,
                   zIndex: 10,
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  backgroundColor: 'var(--mantine-color-body)',
                   backdropFilter: 'blur(8px)',
                   paddingTop: 'var(--mantine-spacing-sm)',
                   paddingBottom: 'var(--mantine-spacing-sm)',
-                  borderBottom: '1px solid var(--mantine-color-gray-3)',
+                  borderBottom: '1px solid var(--mantine-color-default-border)',
                 }}
               >
                 <Text

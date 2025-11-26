@@ -304,8 +304,8 @@ export function ChatInterface({ transcriptId, transcript }: ChatInterfaceProps) 
         <Box
           p="md"
           style={{
-            borderTop: '1px solid var(--mantine-color-gray-3)',
-            backgroundColor: 'var(--mantine-color-gray-0)',
+            borderTop: '1px solid var(--mantine-color-default-border)',
+            backgroundColor: 'var(--mantine-color-default)',
           }}
         >
           <Stack gap="xs">
@@ -438,8 +438,8 @@ const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProp
           style={{
             backgroundColor: isUser
               ? 'var(--logo-blue)'
-              : 'var(--mantine-color-gray-1)',
-            color: isUser ? 'white' : 'var(--mantine-color-gray-9)',
+              : 'var(--mantine-color-default)',
+            color: isUser ? 'white' : 'var(--mantine-color-text)',
             wordBreak: 'break-word',
           }}
         >
@@ -506,7 +506,7 @@ function TypingIndicator() {
         p="md"
         radius="md"
         style={{
-          backgroundColor: 'var(--mantine-color-gray-1)',
+          backgroundColor: 'var(--mantine-color-default)',
           minWidth: '80px',
         }}
       >
@@ -594,7 +594,7 @@ function EmptyState() {
             width: 80,
             height: 80,
             borderRadius: '50%',
-            backgroundColor: 'var(--mantine-color-blue-0)',
+            backgroundColor: 'var(--mantine-color-aphBlue-light)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -626,8 +626,8 @@ function EmptyState() {
                 withBorder
                 style={{
                   cursor: 'default',
-                  backgroundColor: 'var(--mantine-color-gray-0)',
-                  borderColor: 'var(--mantine-color-gray-3)',
+                  backgroundColor: 'var(--mantine-color-default)',
+                  borderColor: 'var(--mantine-color-default-border)',
                 }}
               >
                 <Text size="sm" c="dimmed" ta="center">
