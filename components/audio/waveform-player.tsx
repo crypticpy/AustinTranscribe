@@ -11,7 +11,7 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { Alert, Box, Flex } from '@mantine/core';
+import { Alert, Box, Flex, useMantineColorScheme } from '@mantine/core';
 import { DEFAULT_AUDIO_CONFIG } from '@/types/audio';
 import type { AudioPlayerConfig } from '@/types/audio';
 
@@ -94,6 +94,7 @@ export function WaveformPlayer({
   // State
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { colorScheme } = useMantineColorScheme();
 
   /**
    * Initializes WaveSurfer instance
@@ -278,7 +279,7 @@ export function WaveformPlayer({
           style={{
             borderRadius: 'var(--mantine-radius-md)',
             overflow: 'hidden',
-            backgroundColor: 'var(--mantine-color-gray-1)',
+            backgroundColor: 'var(--mantine-color-default)',
             minHeight: config?.waveformHeight || 80,
           }}
         />
@@ -292,7 +293,7 @@ export function WaveformPlayer({
             right={0}
             bottom={0}
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              backgroundColor: colorScheme === 'dark' ? 'rgba(26, 27, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)',
               backdropFilter: 'blur(4px)',
               borderRadius: 'var(--mantine-radius-md)',
             }}

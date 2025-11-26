@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Moon, Sun, Settings } from "lucide-react";
 import {
@@ -68,13 +69,13 @@ export default function Header() {
             <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
               <Group gap="sm">
                 <Box style={{ display: "flex", alignItems: "center" }}>
-{/* Using native img to avoid Next.js Image preload/LCP conflicts in client components */}
-                  <img
+<Image
                     src="/images/coa-logo.png"
                     alt="City of Austin Logo"
                     width={180}
                     height={45}
                     className="coa-header-logo"
+                    priority
                     style={{
                       objectFit: "contain",
                     }}
@@ -92,37 +93,40 @@ export default function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <Group gap="lg" visibleFrom="md">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="nav-link"
-                  style={{
-                    textDecoration: "none",
-                  }}
-                >
-                  <Text
-                    component="span"
-                    size="sm"
-                    fw={600} // Increased font weight
-                    className={pathname === item.href ? "nav-text-active" : "nav-text"}
+            <Group gap="xs" visibleFrom="md">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`nav-link ${isActive ? "nav-link-active" : ""}`}
+                    style={{
+                      textDecoration: "none",
+                    }}
                   >
-                    {item.label}
-                  </Text>
-                </Link>
-              ))}
+                    <Text
+                      component="span"
+                      size="sm"
+                      fw={600}
+                      className={isActive ? "nav-text-active" : "nav-text"}
+                    >
+                      {item.label}
+                    </Text>
+                  </Link>
+                );
+              })}
             </Group>
 
             {/* Desktop Actions */}
             <Group gap="xs" visibleFrom="md">
               <LanguageSwitcher />
               <ActionIcon
-                variant="subtle"
+                variant="default"
                 onClick={toggleTheme}
                 aria-label="Toggle theme"
                 size="lg"
-                className="touch-target-sm"
+                className="touch-target-sm header-action-icon"
               >
                 {mounted && (colorScheme === "dark" ? (
                   <Sun size={20} />
@@ -131,11 +135,11 @@ export default function Header() {
                 ))}
               </ActionIcon>
               <ActionIcon
-                variant="subtle"
+                variant="default"
                 onClick={() => setIsSettingsOpen(true)}
                 aria-label="Settings"
                 size="lg"
-                className="touch-target-sm"
+                className="touch-target-sm header-action-icon"
               >
                 <Settings size={20} />
               </ActionIcon>
@@ -145,11 +149,11 @@ export default function Header() {
             <Group gap="xs" hiddenFrom="md">
               <LanguageSwitcher />
               <ActionIcon
-                variant="subtle"
+                variant="default"
                 onClick={toggleTheme}
                 aria-label="Toggle theme"
                 size="lg"
-                className="touch-target"
+                className="touch-target header-action-icon"
               >
                 {mounted && (colorScheme === "dark" ? (
                   <Sun size={20} />
@@ -249,6 +253,39 @@ export default function Header() {
           border-left-color: rgba(255, 255, 255, 0.3);
           color: rgba(255, 255, 255, 0.9);
         }
+        /* Nav link pill styling with background + underline */
+        :global(.nav-link) {
+          padding: 8px 14px;
+          border-radius: var(--mantine-radius-md);
+          transition: background-color 0.15s ease;
+          position: relative;
+        }
+        :global(.nav-link:hover) {
+          background-color: var(--mantine-color-gray-1);
+        }
+        :global(.nav-link-active) {
+          background-color: rgba(68, 73, 156, 0.1);
+        }
+        :global(.nav-link-active::after) {
+          content: '';
+          position: absolute;
+          bottom: 2px;
+          left: 14px;
+          right: 14px;
+          height: 2px;
+          background-color: var(--mantine-color-aphBlue-6);
+          border-radius: 1px;
+        }
+        /* Dark mode nav link */
+        :global(html[data-mantine-color-scheme='dark'] .nav-link:hover) {
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+        :global(html[data-mantine-color-scheme='dark'] .nav-link-active) {
+          background-color: rgba(255, 255, 255, 0.15);
+        }
+        :global(html[data-mantine-color-scheme='dark'] .nav-link-active::after) {
+          background-color: #fff;
+        }
         :global(.nav-text),
         :global(.nav-text-active) {
           transition: color 0.15s ease;
@@ -268,6 +305,22 @@ export default function Header() {
         }
         :global(.nav-link:hover .nav-text) {
           color: var(--mantine-color-text) !important;
+        }
+        /* Action icons styling */
+        :global(.header-action-icon) {
+          border-color: var(--mantine-color-gray-3) !important;
+        }
+        :global(.header-action-icon:hover) {
+          background-color: var(--mantine-color-gray-1) !important;
+          border-color: var(--mantine-color-gray-4) !important;
+        }
+        :global(html[data-mantine-color-scheme='dark'] .header-action-icon) {
+          border-color: rgba(255, 255, 255, 0.2) !important;
+          background-color: transparent !important;
+        }
+        :global(html[data-mantine-color-scheme='dark'] .header-action-icon:hover) {
+          background-color: rgba(255, 255, 255, 0.1) !important;
+          border-color: rgba(255, 255, 255, 0.3) !important;
         }
         :global(.mobile-nav-link:hover .mobile-nav-item:not(.mobile-nav-item-active)) {
           background-color: var(--mantine-color-gray-1) !important;

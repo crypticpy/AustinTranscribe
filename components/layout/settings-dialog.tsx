@@ -247,7 +247,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <li>
                       In your project root, copy{" "}
                       <Text component="code" size="xs" px={6} py={2} style={{
-                        backgroundColor: 'var(--mantine-color-gray-1)',
+                        backgroundColor: 'var(--mantine-color-default)',
                         borderRadius: 'var(--mantine-radius-sm)',
                         fontFamily: 'monospace'
                       }}>
@@ -255,7 +255,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       </Text>{" "}
                       to{" "}
                       <Text component="code" size="xs" px={6} py={2} style={{
-                        backgroundColor: 'var(--mantine-color-gray-1)',
+                        backgroundColor: 'var(--mantine-color-default)',
                         borderRadius: 'var(--mantine-radius-sm)',
                         fontFamily: 'monospace'
                       }}>
@@ -264,7 +264,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     </li>
                     <li>
                       Open <Text component="code" size="xs" px={6} py={2} style={{
-                        backgroundColor: 'var(--mantine-color-gray-1)',
+                        backgroundColor: 'var(--mantine-color-default)',
                         borderRadius: 'var(--mantine-radius-sm)',
                         fontFamily: 'monospace'
                       }}>.env.local</Text> and add your API credentials:

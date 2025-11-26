@@ -104,12 +104,13 @@ function chatErrorResponse(
 /**
  * Success response helper with custom structure for chat endpoint
  */
-function chatSuccessResponse(answer: string) {
+function chatSuccessResponse(answer: string, model: string) {
   return NextResponse.json(
     {
       success: true,
       data: {
         answer,
+        model,
       },
     },
     { status: 200 }
@@ -419,9 +420,10 @@ export async function POST(request: NextRequest) {
       transcriptId,
       answerLength: answer.length,
       tokensUsed: completion.usage?.total_tokens,
+      model: deployment,
     });
 
-    return chatSuccessResponse(answer);
+    return chatSuccessResponse(answer, deployment);
   } catch (error) {
     // Catch-all for unexpected errors
     console.error('[Chat] Unexpected error:', error);

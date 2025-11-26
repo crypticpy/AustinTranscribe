@@ -289,10 +289,10 @@ export function FileUploadZone({
             >
               {isDragging ? "Drop your file here" : "Upload Audio File"}
             </Text>
-            <Text size="sm" c="dimmed" ta="center" maw={rem(400)} visibleFrom="sm">
+            <Text size="sm" c="dimmed" ta="center" maw={rem(400)} visibleFrom="sm" className={styles.helperText}>
               Drag and drop your audio file here, or click to browse
             </Text>
-            <Text size="sm" c="dimmed" ta="center" maw={rem(400)} hiddenFrom="sm">
+            <Text size="sm" c="dimmed" ta="center" maw={rem(400)} hiddenFrom="sm" className={styles.helperText}>
               Tap to select an audio file
             </Text>
 
@@ -311,7 +311,7 @@ export function FileUploadZone({
                   </Badge>
                 ))}
               </Group>
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="dimmed" className={styles.helperText}>
                 Files larger than {maxFileSizeMB} MB are automatically converted and split.
               </Text>
             </Stack>

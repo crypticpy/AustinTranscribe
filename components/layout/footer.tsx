@@ -18,7 +18,7 @@ export default function Footer() {
       <Box
         component="footer"
         style={{
-          borderTop: "1px solid var(--mantine-color-gray-3)",
+          borderTop: "1px solid var(--mantine-color-default-border)",
           backgroundColor: "var(--mantine-color-body)",
         }}
       >

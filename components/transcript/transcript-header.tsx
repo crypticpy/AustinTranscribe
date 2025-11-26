@@ -202,8 +202,7 @@ export const TranscriptHeader = memo(function TranscriptHeader({
         <Paper
           p="md"
           radius="md"
-          bg="gray.0"
-          style={{ border: "1px solid var(--mantine-color-gray-3)" }}
+          style={{ backgroundColor: "var(--mantine-color-default)", border: "1px solid var(--mantine-color-default-border)" }}
         >
           <Group gap="xs" mb={4}>
             <Clock
@@ -221,8 +220,7 @@ export const TranscriptHeader = memo(function TranscriptHeader({
         <Paper
           p="md"
           radius="md"
-          bg="gray.0"
-          style={{ border: "1px solid var(--mantine-color-gray-3)" }}
+          style={{ backgroundColor: "var(--mantine-color-default)", border: "1px solid var(--mantine-color-default-border)" }}
         >
           <Group gap="xs" mb={4}>
             <FileText
@@ -240,8 +238,7 @@ export const TranscriptHeader = memo(function TranscriptHeader({
         <Paper
           p="md"
           radius="md"
-          bg="gray.0"
-          style={{ border: "1px solid var(--mantine-color-gray-3)" }}
+          style={{ backgroundColor: "var(--mantine-color-default)", border: "1px solid var(--mantine-color-default-border)" }}
         >
           <Group gap="xs" mb={4}>
             <Languages
@@ -263,8 +260,7 @@ export const TranscriptHeader = memo(function TranscriptHeader({
         <Paper
           p="md"
           radius="md"
-          bg="gray.0"
-          style={{ border: "1px solid var(--mantine-color-gray-3)" }}
+          style={{ backgroundColor: "var(--mantine-color-default)", border: "1px solid var(--mantine-color-default-border)" }}
         >
           <Group gap="xs" mb={4}>
             <Mic size={14} style={{ color: "var(--mantine-color-dimmed)" }} />
@@ -281,8 +277,7 @@ export const TranscriptHeader = memo(function TranscriptHeader({
         <Paper
           p="md"
           radius="md"
-          bg="gray.0"
-          style={{ border: "1px solid var(--mantine-color-gray-3)" }}
+          style={{ backgroundColor: "var(--mantine-color-default)", border: "1px solid var(--mantine-color-default-border)" }}
         >
           <Group gap="xs" mb={4}>
             <FileText

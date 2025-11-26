@@ -65,7 +65,7 @@ const AudioPlayer = dynamic(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'var(--mantine-color-gray-1)',
+          backgroundColor: 'var(--mantine-color-default)',
           borderRadius: 'var(--mantine-radius-md)'
         }}
       >
@@ -326,16 +326,23 @@ export default function TranscriptDetailPage() {
     [transcript]
   );
 
-  // Handle scroll for sticky tabs shadow
+  // Handle scroll for sticky tabs shadow (throttled for performance)
   useEffect(() => {
+    let lastCall = 0;
+    const throttleMs = 100;
+
     const handleScroll = () => {
+      const now = Date.now();
+      if (now - lastCall < throttleMs) return;
+      lastCall = now;
+
       if (tabsRef.current) {
         const rect = tabsRef.current.getBoundingClientRect();
         setIsScrolled(rect.top <= 0);
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -439,8 +446,7 @@ export default function TranscriptDetailPage() {
               <Paper
                 p="md"
                 radius="md"
-                bg="gray.0"
-                style={{ border: "1px solid var(--mantine-color-gray-3)" }}
+                style={{ backgroundColor: "var(--mantine-color-default)", border: "1px solid var(--mantine-color-default-border)" }}
               >
                 <Stack gap="xs">
                   <Group gap="xs" mb="xs">

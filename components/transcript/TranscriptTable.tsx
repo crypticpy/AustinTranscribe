@@ -58,7 +58,7 @@ function SortableHeader({
         alignItems: 'center',
         gap: 4,
         fontWeight: 600,
-        color: isActive ? 'var(--mantine-color-blue-6)' : 'inherit',
+        color: isActive ? 'var(--mantine-primary-color-filled)' : 'inherit',
       }}
     >
       {children}
@@ -149,7 +149,7 @@ export function TranscriptTable({
             return (
               <Table.Tr
                 key={transcript.id}
-                bg={isSelected ? 'var(--mantine-color-blue-light)' : undefined}
+                bg={isSelected ? 'var(--mantine-primary-color-light)' : undefined}
               >
                 <Table.Td>
                   <Checkbox

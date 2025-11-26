@@ -28,6 +28,9 @@ export interface ChatMessage {
 
   /** When the message was created */
   timestamp: Date;
+
+  /** Model name that generated this response (assistant messages only) */
+  model?: string;
 }
 
 /**
@@ -83,6 +86,9 @@ export interface ChatRequest {
 export interface ChatResponse {
   /** The assistant's answer to the question */
   answer: string;
+
+  /** The model/deployment that generated the response */
+  model: string;
 }
 
 /**

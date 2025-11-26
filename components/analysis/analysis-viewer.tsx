@@ -333,7 +333,7 @@ export function AnalysisViewer({
                 <>
                   <Divider my="md" />
                   <Box pt="sm">
-                    <Paper p="lg" radius="md" withBorder style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>
+                    <Paper p="lg" radius="md" withBorder style={{ backgroundColor: 'var(--mantine-color-default)' }}>
                       <Group gap="xs" mb="sm">
                         <Lightbulb size={16} style={{ color: 'var(--aph-yellow)' }} />
                         <Title order={3} size="sm">
@@ -494,7 +494,7 @@ export function AnalysisViewer({
                           width: 16,
                           height: 16,
                           borderRadius: '50%',
-                          backgroundColor: 'white',
+                          backgroundColor: 'var(--mantine-color-body)',
                           border: `4px solid var(--compliant-green)`,
                           boxShadow: 'var(--mantine-shadow-sm)'
                         }}
@@ -531,7 +531,7 @@ export function AnalysisViewer({
                             <Box
                               p="sm"
                               style={{
-                                backgroundColor: 'var(--mantine-color-gray-0)',
+                                backgroundColor: 'var(--mantine-color-default)',
                                 borderLeft: `2px solid var(--mantine-color-blue-3)`,
                                 borderRadius: 'var(--mantine-radius-sm)'
                               }}

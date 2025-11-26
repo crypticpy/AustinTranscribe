@@ -80,17 +80,16 @@ export function ChatInterface({ transcriptId, transcript }: ChatInterfaceProps) 
   // Refs
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollSentinelRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const viewport = scrollAreaRef.current.querySelector(
-        '[data-radix-scroll-area-viewport]'
-      ) as HTMLDivElement;
-      if (viewport) {
-        viewport.scrollTop = viewport.scrollHeight;
-      }
-    }
+    // Use setTimeout to ensure DOM has fully updated before scrolling
+    const timeoutId = setTimeout(() => {
+      scrollSentinelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [messages, loading]);
 
   // Handle send message
@@ -264,6 +263,7 @@ export function ChatInterface({ transcriptId, transcript }: ChatInterfaceProps) 
                 <MessageBubble key={message.id} message={message} />
               ))}
               {loading && <TypingIndicator />}
+              <div ref={scrollSentinelRef} style={{ height: 1 }} />
             </Stack>
           )}
         </ScrollArea>
@@ -426,6 +426,12 @@ const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProp
           minWidth: '200px',
         }}
       >
+        {/* Model label for AI messages */}
+        {!isUser && message.model && (
+          <Text size="xs" c="dimmed" mb={4} fw={500}>
+            {message.model}
+          </Text>
+        )}
         <Paper
           p="md"
           radius="md"

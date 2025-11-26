@@ -19,10 +19,8 @@ import {
   EXPORT_FORMATS,
 } from "@/lib/export/transcript-exporter";
 import type { ExportFormat } from "@/lib/export/download-helper";
-import {
-  exportAndDownloadTranscript,
-  isPDFExportSupported,
-} from "@/lib/pdf/pdf-exporter";
+// PDF exporter is imported dynamically to avoid loading the 4MB @react-pdf/renderer on every page
+// import { exportAndDownloadTranscript, isPDFExportSupported } from "@/lib/pdf/pdf-exporter";
 
 /**
  * Props for the ExportMenu component
@@ -117,8 +115,11 @@ export function ExportMenu({
       setExportingFormat(format);
 
       try {
-        // Handle PDF export separately
+        // Handle PDF export separately (dynamically loaded)
         if (format === "pdf") {
+          // Dynamically import PDF exporter to avoid loading 4MB @react-pdf/renderer upfront
+          const { exportAndDownloadTranscript, isPDFExportSupported } = await import("@/lib/pdf/pdf-exporter");
+
           // Check PDF support
           if (!isPDFExportSupported()) {
             notifications.show({

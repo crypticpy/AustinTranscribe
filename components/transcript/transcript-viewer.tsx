@@ -234,8 +234,8 @@ const FullTextView = memo(function FullTextView({
         px="md"
         py="sm"
         style={{
-          backgroundColor: 'var(--mantine-color-gray-1)',
-          borderBottom: '1px solid var(--mantine-color-gray-3)',
+          backgroundColor: 'var(--mantine-color-default)',
+          borderBottom: '1px solid var(--mantine-color-default-border)',
         }}
       >
         <Text size="sm" c="dimmed">{wordCount.toLocaleString()} words</Text>
@@ -247,8 +247,8 @@ const FullTextView = memo(function FullTextView({
         ref={containerRef}
         style={{
           flex: 1,
-          backgroundColor: 'var(--mantine-color-white)',
-          border: '1px solid var(--mantine-color-gray-3)',
+          backgroundColor: 'var(--mantine-color-body)',
+          border: '1px solid var(--mantine-color-default-border)',
           borderRadius: 'var(--mantine-radius-md)',
         }}
         p="lg"
@@ -415,8 +415,8 @@ export const SplitTranscriptViewer = memo(function SplitTranscriptViewer({
         }}
       >
         {/* Segments Panel */}
-        <Stack gap={0} style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
-          <Box px="md" py="sm" style={{ backgroundColor: 'var(--mantine-color-gray-1)', borderBottom: '1px solid var(--mantine-color-gray-3)' }}>
+        <Stack gap={0} style={{ border: '1px solid var(--mantine-color-default-border)', borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
+          <Box px="md" py="sm" style={{ backgroundColor: 'var(--mantine-color-default)', borderBottom: '1px solid var(--mantine-color-default-border)' }}>
             <Text size="sm" fw={600}>
               Segments ({transcript.segments.length})
             </Text>
@@ -433,8 +433,8 @@ export const SplitTranscriptViewer = memo(function SplitTranscriptViewer({
         </Stack>
 
         {/* Full Text Panel */}
-        <Stack gap={0} style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
-          <Box px="md" py="sm" style={{ backgroundColor: 'var(--mantine-color-gray-1)', borderBottom: '1px solid var(--mantine-color-gray-3)' }}>
+        <Stack gap={0} style={{ border: '1px solid var(--mantine-color-default-border)', borderRadius: 'var(--mantine-radius-md)', overflow: 'hidden' }}>
+          <Box px="md" py="sm" style={{ backgroundColor: 'var(--mantine-color-default)', borderBottom: '1px solid var(--mantine-color-default-border)' }}>
             <Text size="sm" fw={600}>Full Text</Text>
           </Box>
           <ScrollArea style={{ flex: 1 }} p="lg">

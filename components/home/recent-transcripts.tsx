@@ -5,7 +5,6 @@ import Link from "next/link";
 import { FileAudio, Clock, ArrowRight, Upload, Settings } from "lucide-react";
 import { Button, Card, Badge, Text, Title, Group, Stack, Grid, Skeleton, Box } from "@mantine/core";
 import { formatDistanceToNow } from "date-fns";
-import { motion } from "framer-motion";
 import type { Transcript } from "@/types/transcript";
 
 interface RecentTranscriptsProps {
@@ -103,21 +102,6 @@ export const RecentTranscripts = memo(function RecentTranscripts({
   isConfigured,
   onConfigureClick,
 }: RecentTranscriptsProps) {
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
   return (
     <Stack gap="md">
       <Group justify="space-between" align="flex-start" wrap="wrap">
@@ -166,26 +150,19 @@ export const RecentTranscripts = memo(function RecentTranscripts({
           ))}
         </Grid>
       ) : transcripts.length > 0 ? (
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-        >
+        <div className="stagger-animate">
           <Grid>
-            {transcripts.map((transcript) => (
+            {transcripts.map((transcript, index) => (
               <Grid.Col key={transcript.id} span={{ base: 12, sm: 6, lg: 4 }}>
-                <motion.div variants={item} style={{ height: '100%' }}>
+                <div className="stagger-item" style={{ animationDelay: `${index * 0.1}s`, height: '100%' }}>
                   <TranscriptCard transcript={transcript} />
-                </motion.div>
+                </div>
               </Grid.Col>
             ))}
           </Grid>
-        </motion.div>
+        </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <div className="page-transition">
           <Card padding="xl" withBorder style={{ borderStyle: 'dashed' }}>
             <Stack align="center" gap="md" py="xl">
               <FileAudio size={48} style={{ color: 'var(--mantine-color-dimmed)' }} />
@@ -217,7 +194,7 @@ export const RecentTranscripts = memo(function RecentTranscripts({
               )}
             </Stack>
           </Card>
-        </motion.div>
+        </div>
       )}
     </Stack>
   );

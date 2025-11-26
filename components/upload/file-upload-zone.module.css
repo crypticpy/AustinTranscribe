@@ -59,11 +59,11 @@
   border-radius: 50%;
   padding: 16px;
   transition: all 300ms ease;
-  background: linear-gradient(to bottom right, var(--mantine-color-aphBlue-0), var(--mantine-color-aphGreen-0));
+  background: var(--mantine-color-aphGreen-0);
 }
 
 .iconContainerDragActive {
-  background: linear-gradient(to bottom right, var(--mantine-color-aphBlue-6), var(--mantine-color-aphGreen-6));
+  background: var(--mantine-color-aphGreen-6);
   transform: scale(1.1);
   box-shadow: var(--mantine-shadow-lg);
 }
@@ -75,7 +75,7 @@
 .uploadIcon {
   width: 40px;
   height: 40px;
-  color: var(--mantine-color-aphBlue-6);
+  color: var(--mantine-color-aphGreen-6);
   transition: all 300ms ease;
 }
 
@@ -90,10 +90,24 @@
 
 .instructionsText {
   transition: color 300ms ease;
+  color: var(--mantine-color-text);
 }
 
 .instructionsTextDragActive {
   color: var(--mantine-primary-color-filled);
+}
+
+/* Dark mode: ensure title text is bright and visible */
+[data-mantine-color-scheme='dark'] .instructionsText {
+  color: var(--mantine-color-white);
+}
+
+/* ===========================
+   Helper Text
+   =========================== */
+
+.helperText {
+  transition: color 300ms ease;
 }
 
 /* ===========================
@@ -315,4 +329,35 @@
 
 .iconContainer {
   will-change: transform, background;
+}
+
+/* ===========================
+   Dark Mode Support
+   =========================== */
+
+[data-mantine-color-scheme='dark'] .iconContainer {
+  background: var(--mantine-color-aphGreen-9);
+}
+
+[data-mantine-color-scheme='dark'] .fileIconContainer {
+  background: var(--mantine-color-aphGreen-9);
+}
+
+[data-mantine-color-scheme='dark'] .uploadZoneDragActive {
+  background: linear-gradient(to bottom right, var(--mantine-color-aphBlue-9) 30%, var(--mantine-color-aphGreen-9) 30%);
+}
+
+[data-mantine-color-scheme='dark'] .metadataIcon {
+  color: var(--mantine-color-gray-5);
+}
+
+/* Dark mode: improve helper text contrast */
+[data-mantine-color-scheme='dark'] .helperText {
+  color: var(--mantine-color-gray-4);
+}
+
+/* Dark mode: improve format badge visibility */
+[data-mantine-color-scheme='dark'] .formatBadge {
+  border-color: var(--mantine-color-gray-5);
+  color: var(--mantine-color-gray-3);
 }

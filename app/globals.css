@@ -23,6 +23,10 @@
   --color-aph-purple: #702F8A;
   --color-aph-yellow: #FFC72C;
 
+  /* Legacy aliases (used by components) */
+  --logo-blue: #44499C;
+  --compliant-green: #94C83D;
+
   /* Background */
   --background: #ffffff;
   --foreground: #1a1a1a;
@@ -135,6 +139,11 @@ a {
   border-bottom: 1px solid var(--mantine-color-gray-3);
 }
 
+[data-mantine-color-scheme='dark'] .sticky-tabs.scrolled {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border-bottom-color: var(--mantine-color-dark-4);
+}
+
 /* Horizontal tab scrolling */
 .mantine-Tabs-list {
   overflow-x: auto;
@@ -158,4 +167,104 @@ a {
 
 .mantine-Tabs-list::-webkit-scrollbar-thumb:hover {
   background: var(--mantine-color-gray-5);
+}
+
+/* Dark mode scrollbar */
+[data-mantine-color-scheme='dark'] .mantine-Tabs-list::-webkit-scrollbar-track {
+  background: var(--mantine-color-dark-6);
+}
+
+[data-mantine-color-scheme='dark'] .mantine-Tabs-list::-webkit-scrollbar-thumb {
+  background: var(--mantine-color-dark-3);
+}
+
+[data-mantine-color-scheme='dark'] .mantine-Tabs-list::-webkit-scrollbar-thumb:hover {
+  background: var(--mantine-color-dark-2);
+}
+
+/* Page transition animation (replaces framer-motion) */
+.page-transition {
+  animation: pageEnter 0.2s ease-out;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero section animations */
+.hero-animate {
+  animation: heroEnter 0.5s ease-out forwards;
+}
+
+@keyframes heroEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero-item-animate {
+  opacity: 0;
+  animation: heroItemEnter 0.4s ease-out forwards;
+}
+
+@keyframes heroItemEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered list animations */
+.stagger-animate {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.stagger-item {
+  opacity: 0;
+  animation: staggerItemEnter 0.4s ease-out forwards;
+}
+
+@keyframes staggerItemEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  .hero-animate,
+  .hero-item-animate,
+  .stagger-animate,
+  .stagger-item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

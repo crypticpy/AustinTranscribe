@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Upload, Mic, FileText } from "lucide-react";
 import { Button, Card, Badge, Tooltip, Text, Title, Group, Stack } from "@mantine/core";
-import { motion } from "framer-motion";
 
 interface HeroSectionProps {
   isLoadingConfig: boolean;
@@ -13,11 +12,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }: HeroSectionProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="hero-animate">
       <Card
         padding="xl"
         radius="lg"
@@ -43,11 +38,7 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
         />
 
         <Stack align="center" gap="lg" style={{ position: 'relative', zIndex: 1 }}>
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
+          <div className="hero-item-animate" style={{ animationDelay: '0.1s' }}>
             <Badge
               size="lg"
               variant="light"
@@ -62,13 +53,9 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
             >
               AI-Powered Meeting Transcription
             </Badge>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+          <div className="hero-item-animate" style={{ animationDelay: '0.2s' }}>
             <Title
               order={1}
               ta="center"
@@ -88,13 +75,9 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
                 Actionable Insights
               </span>
             </Title>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <div className="hero-item-animate" style={{ animationDelay: '0.3s' }}>
             <Text
               size="lg"
               ta="center"
@@ -107,21 +90,17 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
             >
               Upload your meeting recordings and let AI transcribe, summarize, and extract action items automatically. Powered by Azure OpenAI.
             </Text>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
+          <div className="hero-item-animate" style={{ animationDelay: '0.4s' }}>
             <Group gap="md" mt="lg" style={{ width: '100%', justifyContent: 'center' }} wrap="wrap">
               {isLoadingConfig ? (
                 <>
-                  <Button size="lg" disabled styles={{ root: { minHeight: 48, background: 'white', color: 'var(--mantine-color-aph-blue-5)' } }}>
+                  <Button size="lg" variant="outline" disabled styles={{ root: { minHeight: 48, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.3)', color: 'white' } }}>
                     <Upload size={20} style={{ marginRight: 8 }} />
                     Loading...
                   </Button>
-                  <Button size="lg" disabled styles={{ root: { minHeight: 48, background: 'white', color: 'var(--mantine-color-aph-blue-5)' } }}>
+                  <Button size="lg" variant="outline" disabled styles={{ root: { minHeight: 48, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.3)', color: 'white' } }}>
                     <Mic size={20} style={{ marginRight: 8 }} />
                     Loading...
                   </Button>
@@ -131,13 +110,21 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
                   <Link href="/upload" style={{ textDecoration: 'none' }}>
                     <Button
                       size="lg"
+                      variant="outline"
                       leftSection={<Upload size={20} />}
                       styles={{
                         root: {
                           minHeight: 48,
-                          background: 'white',
-                          color: 'var(--mantine-color-aph-blue-5)',
-                          '&:hover': { background: 'rgba(255, 255, 255, 0.9)' },
+                          borderWidth: 2,
+                          borderColor: 'rgba(255, 255, 255, 0.3)',
+                          color: 'white',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            borderColor: 'rgba(255, 255, 255, 0.6)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                          },
                         },
                       }}
                     >
@@ -147,13 +134,21 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
                   <Link href="/record" style={{ textDecoration: 'none' }}>
                     <Button
                       size="lg"
+                      variant="outline"
                       leftSection={<Mic size={20} />}
                       styles={{
                         root: {
                           minHeight: 48,
-                          background: 'white',
-                          color: 'var(--mantine-color-aph-blue-5)',
-                          '&:hover': { background: 'rgba(255, 255, 255, 0.9)' },
+                          borderWidth: 2,
+                          borderColor: 'rgba(255, 255, 255, 0.3)',
+                          color: 'white',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            borderColor: 'rgba(255, 255, 255, 0.6)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                          },
                         },
                       }}
                     >
@@ -175,14 +170,22 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
                   >
                     <Button
                       size="lg"
+                      variant="outline"
                       onClick={onConfigureClick}
                       leftSection={<Upload size={20} />}
                       styles={{
                         root: {
                           minHeight: 48,
-                          background: 'white',
-                          color: 'var(--mantine-color-aph-blue-5)',
-                          '&:hover': { background: 'rgba(255, 255, 255, 0.9)' },
+                          borderWidth: 2,
+                          borderColor: 'rgba(255, 255, 255, 0.3)',
+                          color: 'white',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            borderColor: 'rgba(255, 255, 255, 0.6)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                          },
                         },
                       }}
                     >
@@ -201,14 +204,22 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
                   >
                     <Button
                       size="lg"
+                      variant="outline"
                       onClick={onConfigureClick}
                       leftSection={<Mic size={20} />}
                       styles={{
                         root: {
                           minHeight: 48,
-                          background: 'white',
-                          color: 'var(--mantine-color-aph-blue-5)',
-                          '&:hover': { background: 'rgba(255, 255, 255, 0.9)' },
+                          borderWidth: 2,
+                          borderColor: 'rgba(255, 255, 255, 0.3)',
+                          color: 'white',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            borderColor: 'rgba(255, 255, 255, 0.6)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                          },
                         },
                       }}
                     >
@@ -229,9 +240,13 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
                       borderWidth: 2,
                       borderColor: 'rgba(255, 255, 255, 0.3)',
                       color: 'white',
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        borderColor: 'white',
+                        color: 'var(--mantine-color-aphBlue-7)',
+                        transform: 'translateY(-3px)',
+                        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
                       },
                     },
                   }}
@@ -240,10 +255,10 @@ export function HeroSection({ isLoadingConfig, isConfigured, onConfigureClick }:
                 </Button>
               </Link>
             </Group>
-          </motion.div>
+          </div>
         </Stack>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 

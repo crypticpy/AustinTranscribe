@@ -118,6 +118,9 @@ export function useChat(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Optimistic UI: store pending user message to show immediately
+  const [pendingUserMessage, setPendingUserMessage] = useState<ChatMessage | null>(null);
+
   // Ref to track if we're currently processing a message (prevents duplicate sends)
   const processingRef = useRef(false);
 
@@ -154,15 +157,18 @@ export function useChat(
     setLoading(true);
     setError(null);
 
-    try {
-      // Create user message
-      const userMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: question.trim(),
-        timestamp: new Date(),
-      };
+    // Create user message
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: question.trim(),
+      timestamp: new Date(),
+    };
 
+    // Show user message immediately (optimistic UI)
+    setPendingUserMessage(userMessage);
+
+    try {
       console.log('[useChat] Sending message:', {
         transcriptId,
         questionLength: question.length,
@@ -223,12 +229,13 @@ export function useChat(
         throw new Error('Received invalid response from server');
       }
 
-      // Create assistant message
+      // Create assistant message with model info
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: data.answer,
         timestamp: new Date(),
+        model: data.model, // Include model name from API response
       };
 
       // Update messages array
@@ -241,6 +248,7 @@ export function useChat(
       console.log('[useChat] Message sent successfully, saving to IndexedDB:', {
         messageCount: updatedMessages.length,
         hasExistingConversation: !!conversation,
+        model: data.model,
       });
 
       // Save to IndexedDB
@@ -259,10 +267,13 @@ export function useChat(
         await saveConversation(newConversation);
       }
 
+      // Clear pending message now that it's saved to DB
+      setPendingUserMessage(null);
       console.log('[useChat] Conversation saved successfully');
     } catch (err) {
       console.error('[useChat] Error sending message:', err);
       setError(err instanceof Error ? err.message : 'Failed to send message');
+      // Keep pending message visible on error so user can see what they sent
     } finally {
       setLoading(false);
       processingRef.current = false;
@@ -284,6 +295,7 @@ export function useChat(
     try {
       console.log('[useChat] Clearing conversation:', conversation.id);
       await updateConversation(conversation.id, []);
+      setPendingUserMessage(null); // Clear any pending message too
       setError(null);
     } catch (err) {
       console.error('[useChat] Error clearing conversation:', err);
@@ -313,8 +325,16 @@ export function useChat(
     }
   }, [conversation]);
 
+  // Compute displayed messages: DB messages + pending user message (optimistic UI)
+  // Only add pending message if it's not already in DB (prevents duplicate key error during race condition)
+  const dbMessages = conversation?.messages || [];
+  const pendingNotInDb = pendingUserMessage && !dbMessages.some(m => m.id === pendingUserMessage.id);
+  const displayedMessages = pendingNotInDb
+    ? [...dbMessages, pendingUserMessage]
+    : dbMessages;
+
   return {
-    messages: conversation?.messages || [],
+    messages: displayedMessages,
     loading,
     error,
     conversationId: conversation?.id || null,
