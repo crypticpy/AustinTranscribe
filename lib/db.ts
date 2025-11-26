@@ -135,6 +135,16 @@ export class MeetingTranscriberDB extends Dexie {
       recordings: '++id, status, transcriptId, metadata.createdAt',
     });
 
+    // Version 7 adds summary field and fileSize index for sorting
+    this.version(7).stores({
+      transcripts: 'id, filename, createdAt, metadata.duration, metadata.fileSize, [filename+createdAt], fingerprint.fileHash',
+      templates: 'id, category, isCustom, createdAt, name',
+      analyses: 'id, transcriptId, templateId, createdAt, [transcriptId+createdAt]',
+      audioFiles: 'transcriptId, storedAt',
+      conversations: 'id, transcriptId, updatedAt, [transcriptId+updatedAt]',
+      recordings: '++id, status, transcriptId, metadata.createdAt',
+    });
+
     // Map tables to classes for better type inference
     this.transcripts = this.table('transcripts');
     this.templates = this.table('templates');
@@ -1498,6 +1508,131 @@ export async function deleteDatabase(): Promise<void> {
     throw new DatabaseError(
       'Failed to delete database',
       'DATABASE_DELETE_FAILED',
+      error instanceof Error ? error : undefined
+    );
+  }
+}
+
+// ============================================================================
+// SORTED TRANSCRIPT QUERIES
+// ============================================================================
+
+/**
+ * Sort options for transcript queries
+ */
+export type TranscriptSortField = 'createdAt' | 'metadata.duration' | 'filename' | 'metadata.fileSize';
+
+/**
+ * Retrieves all transcripts with custom sorting
+ *
+ * @param sortBy - Field to sort by
+ * @param order - Sort direction ('asc' or 'desc')
+ * @returns Array of sorted transcripts
+ * @throws {DatabaseError} If the retrieval operation fails
+ *
+ * @example
+ * ```typescript
+ * // Get transcripts sorted by duration (longest first)
+ * const byDuration = await getTranscriptsSorted('metadata.duration', 'desc');
+ *
+ * // Get transcripts sorted by filename A-Z
+ * const byName = await getTranscriptsSorted('filename', 'asc');
+ * ```
+ */
+export async function getTranscriptsSorted(
+  sortBy: TranscriptSortField = 'createdAt',
+  order: 'asc' | 'desc' = 'desc'
+): Promise<Transcript[]> {
+  try {
+    const db = getDatabase();
+
+    // For nested properties, we need to sort in memory
+    if (sortBy === 'metadata.fileSize') {
+      const all = await db.transcripts.toArray();
+      return all.sort((a, b) => {
+        const aVal = a.metadata?.fileSize ?? 0;
+        const bVal = b.metadata?.fileSize ?? 0;
+        return order === 'asc' ? aVal - bVal : bVal - aVal;
+      });
+    }
+
+    // For indexed fields, use Dexie's orderBy
+    let query = db.transcripts.orderBy(sortBy);
+    if (order === 'desc') {
+      query = query.reverse();
+    }
+    return await query.toArray();
+  } catch (error) {
+    throw new DatabaseError(
+      'Failed to retrieve sorted transcripts',
+      'GET_SORTED_FAILED',
+      error instanceof Error ? error : undefined
+    );
+  }
+}
+
+/**
+ * Deletes multiple transcripts in a single transaction
+ *
+ * More efficient than calling deleteTranscript() multiple times.
+ * Also deletes all associated analyses and conversations.
+ *
+ * @param ids - Array of transcript IDs to delete
+ * @returns Number of transcripts deleted
+ * @throws {DatabaseError} If the bulk delete operation fails
+ *
+ * @example
+ * ```typescript
+ * const idsToDelete = ['transcript-1', 'transcript-2', 'transcript-3'];
+ * const deleted = await deleteTranscriptsBulk(idsToDelete);
+ * console.log(`Deleted ${deleted} transcripts`);
+ * ```
+ */
+export async function deleteTranscriptsBulk(ids: string[]): Promise<number> {
+  try {
+    if (ids.length === 0) {
+      return 0;
+    }
+
+    const db = getDatabase();
+
+    // Use a transaction to ensure all deletions succeed or fail together
+    await db.transaction('rw', [db.transcripts, db.analyses, db.conversations], async () => {
+      // Delete transcripts
+      await db.transcripts.bulkDelete(ids);
+
+      // Delete all associated analyses and conversations
+      for (const id of ids) {
+        await db.analyses.where('transcriptId').equals(id).delete();
+        await db.conversations.where('transcriptId').equals(id).delete();
+      }
+    });
+
+    return ids.length;
+  } catch (error) {
+    throw new DatabaseError(
+      'Failed to bulk delete transcripts',
+      'BULK_DELETE_FAILED',
+      error instanceof Error ? error : undefined
+    );
+  }
+}
+
+/**
+ * Updates a transcript's summary field
+ *
+ * @param id - The transcript ID to update
+ * @param summary - The new summary text
+ * @throws {DatabaseError} If the update operation fails
+ */
+export async function updateTranscriptSummary(id: string, summary: string): Promise<void> {
+  try {
+    const db = getDatabase();
+    await db.transcripts.update(id, { summary });
+  } catch (error) {
+    throw new DatabaseError(
+      `Failed to update transcript summary for ID: ${id}`,
+      'UPDATE_FAILED',
       error instanceof Error ? error : undefined
     );
   }

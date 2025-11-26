@@ -460,3 +460,67 @@ export async function initializeAndValidate(): Promise<void> {
     keyVault: getKeyVaultSummary(),
   });
 }
+
+/**
+ * Generate a brief summary of transcript text using GPT
+ *
+ * Creates a concise 1-2 sentence summary capturing the main topic
+ * and key points of the transcript.
+ *
+ * @param transcriptText - The full transcript text (will be truncated if too long)
+ * @returns Promise resolving to the generated summary string
+ * @throws {Error} If the API call fails
+ *
+ * @example
+ * ```typescript
+ * const summary = await generateTranscriptSummary(transcript.text);
+ * // "Team discussed Q4 marketing budget allocation and approved $50K for social media campaigns."
+ * ```
+ */
+export async function generateTranscriptSummary(transcriptText: string): Promise<string> {
+  const client = getOpenAIClient();
+  const deployment = getGPTAnalysisDeployment();
+
+  // Truncate text to first 4000 chars to keep tokens reasonable
+  const truncatedText = transcriptText.slice(0, 4000);
+
+  try {
+    const response = await client.chat.completions.create({
+      model: deployment,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a concise summarizer. Generate a 1-2 sentence summary of the transcript that captures:
+- The main topic or purpose of the discussion
+- Key decisions or outcomes (if any)
+
+Keep it brief and informative. Do not start with "This transcript..." or "The meeting...". Write in a direct, professional style.`,
+        },
+        {
+          role: 'user',
+          content: truncatedText,
+        },
+      ],
+      max_tokens: 150,
+      temperature: 0.3,
+    });
+
+    const summary = response.choices[0]?.message?.content?.trim();
+
+    if (!summary) {
+      console.warn('[OpenAI] Summary generation returned empty response');
+      return '';
+    }
+
+    console.log('[OpenAI] Generated transcript summary:', {
+      inputLength: truncatedText.length,
+      summaryLength: summary.length,
+    });
+
+    return summary;
+  } catch (error) {
+    console.error('[OpenAI] Failed to generate transcript summary:', error);
+    // Return empty string instead of throwing - summary is optional
+    return '';
+  }
+}

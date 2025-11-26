@@ -79,6 +79,9 @@ export interface Transcript {
   /** Metadata about the transcription and source audio */
   metadata: TranscriptMetadata;
 
+  /** AI-generated 1-2 sentence summary of the transcript content */
+  summary?: string;
+
   /** City of Austin department (for organization and filtering) */
   department?: string;
 

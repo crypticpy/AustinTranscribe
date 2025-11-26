@@ -26,6 +26,7 @@ import {
   getTranscriptionClient,
   getWhisperDeployment,
   OpenAIConfigError,
+  generateTranscriptSummary,
 } from '@/lib/openai';
 import {
   getSupportedAudioTypes,
@@ -704,6 +705,18 @@ export async function POST(request: NextRequest) {
       partIndex,
       totalParts,
     };
+
+    // Generate AI summary (non-blocking - won't fail transcription if summary fails)
+    if (transcript.text && transcript.text.length > 50) {
+      console.log('[Transcribe] Generating AI summary...');
+      const summary = await generateTranscriptSummary(transcript.text);
+      if (summary) {
+        transcript.summary = summary;
+        console.log('[Transcribe] Summary generated:', {
+          summaryLength: summary.length,
+        });
+      }
+    }
 
     console.log('[Transcribe] Transcription completed:', {
       id: transcript.id,
