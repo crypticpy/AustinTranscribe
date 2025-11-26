@@ -4,11 +4,9 @@ const nextConfig = {
   // This creates a minimal .next/standalone folder with all required files
   output: 'standalone',
 
-  // Experimental features
-  experimental: {
-    // Prevent FFmpeg WASM packages from being bundled for SSR
-    serverComponentsExternalPackages: ['@ffmpeg/ffmpeg', '@ffmpeg/util', '@ffmpeg/core'],
-  },
+  // Prevent FFmpeg WASM packages from being bundled for SSR
+  // (Moved from experimental in Next.js 15)
+  serverExternalPackages: ['@ffmpeg/ffmpeg', '@ffmpeg/util', '@ffmpeg/core'],
 
   webpack: (config, { isServer }) => {
     // Handle FFmpeg WASM files

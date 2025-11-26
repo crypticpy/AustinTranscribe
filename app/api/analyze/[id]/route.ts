@@ -37,9 +37,9 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const transcriptId = params.id;
+  const { id: transcriptId } = await params;
 
   console.log(`[Analysis] Retrieval request for transcript: ${transcriptId}`);
 
@@ -129,9 +129,9 @@ const analyses = await getAnalysisByTranscript('${transcriptId}');`,
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const analysisId = params.id;
+  const { id: analysisId } = await params;
 
   console.log(`[Analysis] Delete request for analysis: ${analysisId}`);
 
