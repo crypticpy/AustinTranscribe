@@ -33,6 +33,9 @@ import {
   Box,
   Switch,
   Skeleton,
+  Loader,
+  Overlay,
+  Center,
 } from "@mantine/core";
 import { useFileUpload } from "@/hooks/use-file-upload";
 import { notifications } from "@mantine/notifications";
@@ -163,6 +166,10 @@ export default function UploadPage() {
   // Source recording ID (when coming from recordings page)
   const [sourceRecordingId, setSourceRecordingId] = React.useState<number | null>(null);
 
+  // Loading state for recording retrieval (when coming from recordings page)
+  const [isLoadingRecording, setIsLoadingRecording] = React.useState(false);
+  const [loadingRecordingStatus, setLoadingRecordingStatus] = React.useState<string>("");
+
   /**
    * Check if coming from recordings page with a recording to transcribe
    */
@@ -174,8 +181,13 @@ export default function UploadPage() {
         if (recordingId) {
           sessionStorage.removeItem("transcribe-recording-id");
 
+          // Show loading state immediately
+          setIsLoadingRecording(true);
+          setLoadingRecordingStatus("Loading recording...");
+
           try {
             // Load recording from IndexedDB
+            setLoadingRecordingStatus("Retrieving recording from storage...");
             const recording = await getRecording(Number(recordingId));
             if (recording) {
               // Normalize MIME type - strip codec suffix (e.g., "audio/webm;codecs=opus" -> "audio/webm")
@@ -204,6 +216,15 @@ export default function UploadPage() {
                 { type: normalizedMimeType }
               );
 
+              // Update status to show we're now processing the file
+              // This is especially important for WebM files that need conversion
+              const isWebM = normalizedMimeType === "audio/webm" || ext === ".webm";
+              if (isWebM) {
+                setLoadingRecordingStatus("Processing audio file for transcription...");
+              } else {
+                setLoadingRecordingStatus("Validating audio file...");
+              }
+
               // Pre-fill the upload form with known duration from recording metadata
               await selectFile(recordingFile, recording.metadata.duration);
 
@@ -215,14 +236,20 @@ export default function UploadPage() {
                 message: "Your recording is ready to transcribe.",
                 color: "green",
               });
+            } else {
+              throw new Error("Recording not found in storage");
             }
           } catch (error) {
             console.error("Failed to load recording:", error);
             notifications.show({
               title: "Error",
-              message: "Failed to load recording. Please try again.",
+              message: error instanceof Error ? error.message : "Failed to load recording. Please try again.",
               color: "red",
             });
+          } finally {
+            // Clear loading state
+            setIsLoadingRecording(false);
+            setLoadingRecordingStatus("");
           }
         }
       }
@@ -436,7 +463,42 @@ export default function UploadPage() {
       progress.status === "transcribing");
 
   return (
-    <Container size="lg" py={{ base: "md", md: "xl" }}>
+    <Container size="lg" py={{ base: "md", md: "xl" }} pos="relative">
+      {/* Loading Overlay for Recording Retrieval */}
+      {isLoadingRecording && (
+        <Overlay
+          color="var(--mantine-color-body)"
+          backgroundOpacity={0.85}
+          blur={3}
+          fixed
+          zIndex={200}
+        >
+          <Center h="100vh">
+            <Card shadow="lg" padding="xl" radius="lg" withBorder style={{ minWidth: 320 }}>
+              <Stack align="center" gap="lg">
+                <Box
+                  style={{
+                    borderRadius: "50%",
+                    background: "var(--aph-light-blue-10)",
+                    padding: 20,
+                  }}
+                >
+                  <Loader size="lg" color="aphBlue" type="dots" />
+                </Box>
+                <Stack align="center" gap="xs">
+                  <Title order={3} size="h4" ta="center">
+                    Preparing Recording
+                  </Title>
+                  <Text size="sm" c="dimmed" ta="center">
+                    {loadingRecordingStatus || "Processing audio file..."}
+                  </Text>
+                </Stack>
+              </Stack>
+            </Card>
+          </Center>
+        </Overlay>
+      )}
+
       <Stack gap="xl">
         {/* Header */}
         <Box>

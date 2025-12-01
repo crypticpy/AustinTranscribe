@@ -162,15 +162,13 @@ export function useAudioAmplitude(
       sourceRef.current = null;
     }
 
-    // Close audio context
-    if (audioContextRef.current) {
-      try {
-        audioContextRef.current.close();
-      } catch {
+    // Close audio context (check state to avoid closing already-closed context)
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close().catch(() => {
         // Ignore errors if already closed
-      }
-      audioContextRef.current = null;
+      });
     }
+    audioContextRef.current = null;
 
     // Clear analyser reference
     analyserRef.current = null;
@@ -270,13 +268,11 @@ export function useAudioAmplitude(
         }
       }
 
-      // Close audio context
-      if (audioContextRef.current) {
-        try {
-          audioContextRef.current.close();
-        } catch {
-          // Ignore
-        }
+      // Close audio context (check state to avoid closing already-closed context)
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(() => {
+          // Ignore errors if already closed
+        });
       }
     };
   }, []);

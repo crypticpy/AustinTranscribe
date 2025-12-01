@@ -118,7 +118,8 @@ export async function convertMP4ToMP3(
     };
     ffmpeg.on('progress', progressListener);
 
-    const inputFileName = 'input.mp4';
+    // Use generic input filename - FFmpeg auto-detects format from content
+    const inputFileName = 'input_audio';
     const outputFileName = 'output.mp3';
 
     // Write input file to FFmpeg virtual file system
@@ -128,12 +129,13 @@ export async function convertMP4ToMP3(
     onProgress?.(20);
 
     // Convert to MP3 with compression
+    // Works for MP4, WebM (Opus/Vorbis), and other formats
     await ffmpeg.exec([
       '-i', inputFileName,
-      '-vn', // Remove video
-      '-ar', '16000', // 16kHz sample rate
+      '-vn', // Remove video (if present)
+      '-ar', '16000', // 16kHz sample rate (optimal for speech)
       '-ac', '1', // Mono
-      '-q:a', '4', // VBR quality
+      '-b:a', '64k', // 64kbps bitrate for good speech quality
       outputFileName
     ]);
 
@@ -151,13 +153,16 @@ export async function convertMP4ToMP3(
 
     // Create new File object from result
     const mp3Blob = new Blob([new Uint8Array(data)], { type: 'audio/mpeg' });
-    const mp3FileName = file.name.replace(/\\.mp4$/i, '.mp3');
+    // Replace any extension with .mp3
+    const mp3FileName = file.name.replace(/\.[^.]+$/, '.mp3');
     const mp3File = new File([mp3Blob], mp3FileName, { type: 'audio/mpeg' });
+
+    console.log(`[Audio] Converted ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) to MP3 (${(mp3File.size / 1024 / 1024).toFixed(2)}MB)`);
 
     return mp3File;
   } catch (error) {
-    console.error('MP4 to MP3 conversion failed:', error);
-    throw new Error(`Failed to convert video to audio: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('Audio conversion failed:', error);
+    throw new Error(`Failed to convert audio: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
@@ -387,9 +392,15 @@ export async function getFileProcessingStrategy(
   const isVideo = file.type.startsWith('video/');
   const isLarge = file.size > CONVERSION_THRESHOLD;
 
+  // WebM audio (audio/webm) needs conversion because:
+  // 1. It uses Opus/Vorbis codec which can't be stream-copied to MP3
+  // 2. Whisper API handles MP3 more reliably
+  const isWebmAudio = file.type === 'audio/webm' || file.name.toLowerCase().endsWith('.webm');
+
   // Video files should be converted if >5MB
+  // WebM audio should always be converted (codec compatibility)
   // We prefer MP3 conversion for videos to strip video data and reduce size
-  const needsConversion = isVideo && isLarge;
+  const needsConversion = (isVideo && isLarge) || isWebmAudio;
 
   // Estimate size after conversion (MP3 is typically 10-20% of MP4 size)
   // Ensure size is always at least 1 byte (defensive against empty blobs)
@@ -459,12 +470,13 @@ export async function processAudioForTranscription(
   const strategy = await getFileProcessingStrategy(file);
 
   let processedFile = file;
+  let needsSplittingAfterConversion = strategy.needsSplitting;
 
-  // Calculate stage weights based on what operations are needed
+  // Calculate initial stage weights based on what operations are needed
   // This ensures cumulative progress without resets
-  const totalStages = (strategy.needsConversion ? 1 : 0) + (strategy.needsSplitting ? 1 : 0);
-  const conversionWeight = strategy.needsConversion ? (1 / totalStages) : 0;
-  const splittingWeight = strategy.needsSplitting ? (1 / totalStages) : 0;
+  let totalStages = (strategy.needsConversion ? 1 : 0) + (strategy.needsSplitting ? 1 : 0);
+  let conversionWeight = strategy.needsConversion ? (1 / Math.max(totalStages, 1)) : 0;
+  let splittingWeight = strategy.needsSplitting ? (1 / Math.max(totalStages, 1)) : 0;
 
   let cumulativeProgress = 0;
 
@@ -481,10 +493,34 @@ export async function processAudioForTranscription(
 
     cumulativeProgress += (conversionWeight * 100);
     onProgress?.('Converting video to audio', cumulativeProgress);
+
+    // CRITICAL: Re-check duration after conversion for WebM/video files
+    // WebM metadata extraction often fails, but MP3 works reliably
+    // If the converted file exceeds duration limit, we need to split it
+    if (!strategy.needsSplitting) {
+      const convertedDuration = await getAudioDuration(processedFile);
+      const convertedSize = processedFile.size;
+
+      if (
+        (convertedDuration !== null && convertedDuration > MAX_WHISPER_DURATION) ||
+        convertedSize > MAX_CHUNK_SIZE_BYTES
+      ) {
+        console.log(`[AudioProcessing] Post-conversion check: duration=${convertedDuration}s, size=${convertedSize}bytes - splitting required`);
+        needsSplittingAfterConversion = true;
+
+        // Recalculate weights now that we know splitting is needed
+        // Conversion is done, so splitting gets the remaining progress
+        totalStages = 2;
+        conversionWeight = 0.5;
+        splittingWeight = 0.5;
+        // Conversion already used ~50% (half of original 100%), keep cumulative at 50%
+        cumulativeProgress = 50;
+      }
+    }
   }
 
-  // Step 2: Split if needed
-  if (strategy.needsSplitting) {
+  // Step 2: Split if needed (either initially or discovered after conversion)
+  if (needsSplittingAfterConversion) {
     const splittingStart = cumulativeProgress;
     onProgress?.('Splitting audio file', splittingStart);
 

@@ -104,6 +104,7 @@ export default function RecordingsPage() {
   const [deleteId, setDeleteId] = React.useState<number | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [playingId, setPlayingId] = React.useState<number | null>(null);
+  const [transcribingId, setTranscribingId] = React.useState<number | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   // Load recordings on mount
@@ -181,6 +182,9 @@ export default function RecordingsPage() {
 
   const handleTranscribe = (recording: SavedRecording) => {
     if (!recording.id) return;
+
+    // Set loading state for this recording
+    setTranscribingId(recording.id);
 
     // Store recording ID in sessionStorage for upload page to retrieve
     sessionStorage.setItem("transcribe-recording-id", String(recording.id));
@@ -333,10 +337,18 @@ export default function RecordingsPage() {
                         variant="light"
                         size="xs"
                         color="aphBlue"
-                        leftSection={<Upload size={14} />}
+                        leftSection={
+                          transcribingId === recording.id ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Upload size={14} />
+                          )
+                        }
                         onClick={() => handleTranscribe(recording)}
+                        disabled={transcribingId === recording.id}
+                        loading={transcribingId === recording.id}
                       >
-                        Transcribe
+                        {transcribingId === recording.id ? "Preparing..." : "Transcribe"}
                       </Button>
                     )}
                     {recording.status === "transcribed" && recording.transcriptId && (

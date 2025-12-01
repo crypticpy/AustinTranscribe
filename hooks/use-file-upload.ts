@@ -107,7 +107,16 @@ function mergeTranscriptParts(parts: TranscriptApiResponse[]): TranscriptApiResp
     throw new Error('No transcript parts supplied');
   }
 
-  const sortedParts = [...parts].sort((a, b) => (
+  // Validate all parts have data before processing
+  const validParts = parts.filter(part => part && part.data);
+  if (validParts.length === 0) {
+    // Find first error message from failed parts
+    const failedPart = parts.find(part => part && !part.success);
+    const errorMessage = (failedPart as { error?: string })?.error || 'Transcription failed - no valid parts returned';
+    throw new Error(errorMessage);
+  }
+
+  const sortedParts = [...validParts].sort((a, b) => (
     typeof a.data.partIndex === 'number' ? a.data.partIndex : 0
   ) - (
     typeof b.data.partIndex === 'number' ? b.data.partIndex : 0
@@ -473,7 +482,9 @@ export function useFileUpload(): UseFileUploadReturn {
       let filesToProcess: File[] = [state.file];
 
       // Check if audio processing is needed
-      const strategy = await getFileProcessingStrategy(state.file);
+      // Pass known duration from audioMetadata to ensure splitting triggers for long files
+      // (WebM metadata extraction can fail, but duration was captured during selectFile)
+      const strategy = await getFileProcessingStrategy(state.file, state.audioMetadata?.duration);
 
       if (strategy.needsConversion || strategy.needsSplitting) {
         // Process audio (convert and/or split)
@@ -569,7 +580,7 @@ export function useFileUpload(): UseFileUploadReturn {
 
                 const uploadingProgress: TranscriptionProgress = {
                   status: 'uploading',
-                  progress: safeAdjustedProgress,
+                  progress: Math.round(safeAdjustedProgress),
                   message: `Uploading${partLabel}... (${Math.round(safeUploadPercent)}%)`,
                 };
                 updateProgressSafely(uploadingProgress, options?.onProgress);
@@ -641,6 +652,12 @@ export function useFileUpload(): UseFileUploadReturn {
       let finalResult = transcriptResults[0];
       if (transcriptResults.length > 1) {
         finalResult = mergeTranscriptParts(transcriptResults);
+      }
+
+      // Validate final result has data
+      if (!finalResult || !finalResult.data) {
+        const errorMessage = (finalResult as { error?: string })?.error || 'Transcription failed - no data returned';
+        throw new Error(errorMessage);
       }
 
       // Update progress: complete

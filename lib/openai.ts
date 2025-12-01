@@ -468,6 +468,46 @@ export async function initializeAndValidate(): Promise<void> {
 }
 
 /**
+ * Check if a model/deployment requires GPT-5 style parameters
+ * (max_completion_tokens instead of max_tokens, no temperature)
+ */
+function isGPT5StyleModel(deployment: string): boolean {
+  const lowerDeployment = deployment.toLowerCase();
+  return lowerDeployment.includes('gpt-5') ||
+         lowerDeployment.includes('o1') ||
+         lowerDeployment.includes('o3');
+}
+
+/**
+ * Build model-appropriate chat completion parameters
+ *
+ * GPT-5 and reasoning models (o1, o3) have different parameter requirements:
+ * - Use max_completion_tokens instead of max_tokens
+ * - Do not support temperature parameter
+ *
+ * @param deployment - The model/deployment name
+ * @param maxTokens - Maximum tokens for the response
+ * @param temperature - Temperature for non-GPT-5 models (ignored for GPT-5)
+ * @returns Object with appropriate parameters for the model
+ */
+export function buildChatCompletionParams(
+  deployment: string,
+  maxTokens?: number,
+  temperature?: number
+): { max_completion_tokens?: number; max_tokens?: number; temperature?: number } {
+  if (isGPT5StyleModel(deployment)) {
+    // GPT-5 and reasoning models: use max_completion_tokens, no temperature
+    return maxTokens ? { max_completion_tokens: maxTokens } : {};
+  }
+
+  // Standard models: use max_tokens and temperature
+  const params: { max_tokens?: number; temperature?: number } = {};
+  if (maxTokens) params.max_tokens = maxTokens;
+  if (temperature !== undefined) params.temperature = temperature;
+  return params;
+}
+
+/**
  * Generate a brief summary of transcript text using GPT
  *
  * Creates a concise 1-2 sentence summary capturing the main topic
@@ -507,8 +547,7 @@ Keep it brief and informative. Do not start with "This transcript..." or "The me
           content: truncatedText,
         },
       ],
-      max_tokens: 150,
-      temperature: 0.3,
+      ...buildChatCompletionParams(deployment, 150, 0.3),
     });
 
     const summary = response.choices[0]?.message?.content?.trim();
