@@ -45,9 +45,9 @@ Get your API key from [platform.openai.com/api-keys](https://platform.openai.com
 ```env
 AZURE_OPENAI_API_KEY=your-azure-key
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_VERSION=2024-12-01-preview
+AZURE_OPENAI_API_VERSION=2025-01-01-preview
 AZURE_OPENAI_WHISPER_DEPLOYMENT=your-whisper-deployment
-AZURE_OPENAI_GPT4_DEPLOYMENT=your-gpt4-deployment
+AZURE_OPENAI_GPT5_DEPLOYMENT=your-gpt5-deployment
 ```
 
 Get your credentials from the [Azure Portal](https://portal.azure.com) → your OpenAI resource → Keys and Endpoint.
@@ -108,8 +108,8 @@ Your deployment name doesn't match. In Azure Portal:
 
 The application is production-ready with:
 
-- **Audio transcription** using Whisper or GPT-4o
-- **AI-powered analysis** with customizable templates
+- **Audio transcription** using Whisper or GPT-4o Transcribe
+- **AI-powered analysis** using GPT-5 (with GPT-4.1 for extended context)
 - **6 built-in templates** for different meeting types
 - **Audio playback** with waveform visualization
 - **PDF and Markdown export**
@@ -140,11 +140,12 @@ The application is production-ready with:
                      │
                      └─────> OpenAI API
                              │
-                             ├─> whisper-1
+                             ├─> whisper-1 / gpt-4o-transcribe
                              │   └─ Audio → Text
                              │
-                             └─> gpt-4o (or your model)
+                             └─> gpt-5 / gpt-41
                                  └─ Analysis & Chat
+                                 (Auto-selected by token count)
 ```
 
 ## Need Help?

@@ -53,19 +53,27 @@ The app is built for **semi-technical teams** - you don't need to be a software 
 
 This app works with OpenAI models through either the standard OpenAI API or Azure OpenAI Service.
 
-### Transcription
+### Transcription Models
 | Model | Best For |
 |-------|----------|
 | **whisper-1** | Fast, accurate transcription of clear audio |
 | **gpt-4o-transcribe** | Complex audio with accents, technical jargon, or background noise |
 
-### Analysis
-| Capability | Description |
-|------------|-------------|
-| **Standard Context** | Meeting summaries, action items, key decisions (128k tokens) |
-| **Extended Context** | Long transcripts, detailed analysis (up to 1M tokens with supported models) |
+### Analysis & Chat Models
+| Model | Purpose | Context Limit |
+|-------|---------|---------------|
+| **gpt-5** | Analysis, summaries, Q&A chat | 256k tokens |
+| **gpt-41** (GPT-4.1) | Extended context for long transcripts | 1M tokens |
 
-The app automatically selects the appropriate model based on transcript length.
+### Automatic Model Selection
+
+The app automatically selects the appropriate model based on transcript length:
+- **< 256k tokens**: Uses GPT-5 (standard context)
+- **>= 256k tokens**: Uses GPT-4.1 (extended context) if configured
+
+Configure via environment variables:
+- `AZURE_OPENAI_GPT5_DEPLOYMENT` - Primary analysis model
+- `AZURE_OPENAI_EXTENDED_GPT_DEPLOYMENT` - Extended context model (optional)
 
 ## Tech Stack
 
@@ -119,7 +127,7 @@ Add your OpenAI API key to `.env.local`:
 OPENAI_API_KEY=sk-your-api-key-here
 ```
 
-That's it! The app will use `whisper-1` for transcription and `gpt-4o` for analysis.
+That's it! The app will use `whisper-1` for transcription and `gpt-5` for analysis.
 
 #### Option B: Azure OpenAI (Recommended for Production)
 
@@ -129,15 +137,16 @@ Azure OpenAI provides enterprise features like private endpoints, managed identi
 # Required
 AZURE_OPENAI_API_KEY=your-azure-api-key
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_VERSION=2024-12-01-preview
+AZURE_OPENAI_API_VERSION=2025-01-01-preview
 
 # Transcription deployment (deploy whisper-1 or gpt-4o-transcribe in Azure)
 AZURE_OPENAI_WHISPER_DEPLOYMENT=your-whisper-deployment-name
 
-# Analysis deployment (deploy gpt-4o or similar in Azure)
-AZURE_OPENAI_GPT4_DEPLOYMENT=your-gpt4o-deployment-name
+# Analysis deployment (deploy gpt-5 in Azure)
+AZURE_OPENAI_GPT5_DEPLOYMENT=your-gpt5-deployment-name
+# Legacy: AZURE_OPENAI_GPT4_DEPLOYMENT is also supported as fallback
 
-# Optional: Extended context deployment for long transcripts
+# Optional: Extended context deployment for long transcripts (gpt-41)
 AZURE_OPENAI_EXTENDED_GPT_DEPLOYMENT=your-extended-context-deployment
 ```
 

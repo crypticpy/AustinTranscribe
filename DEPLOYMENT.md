@@ -245,10 +245,21 @@ OPENAI_API_KEY=sk-your-api-key
 ```env
 AZURE_OPENAI_API_KEY=your-azure-key
 AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_VERSION=2024-12-01-preview
+AZURE_OPENAI_API_VERSION=2025-01-01-preview
 AZURE_OPENAI_WHISPER_DEPLOYMENT=your-whisper-deployment
-AZURE_OPENAI_GPT4_DEPLOYMENT=your-gpt4-deployment
+AZURE_OPENAI_GPT5_DEPLOYMENT=your-gpt5-deployment
 ```
+
+### Analysis Model Selection
+
+The app automatically selects the appropriate GPT model based on transcript size:
+
+| Transcript Size | Model | Environment Variable |
+|-----------------|-------|---------------------|
+| < 256k tokens | GPT-5 (standard) | `AZURE_OPENAI_GPT5_DEPLOYMENT` |
+| >= 256k tokens | GPT-4.1 (extended) | `AZURE_OPENAI_EXTENDED_GPT_DEPLOYMENT` |
+
+**Note**: `AZURE_OPENAI_GPT4_DEPLOYMENT` is still supported as a legacy fallback.
 
 ### Optional Variables
 
@@ -257,7 +268,8 @@ AZURE_OPENAI_GPT4_DEPLOYMENT=your-gpt4-deployment
 | `PORT` | Server port | `3000` |
 | `HOSTNAME` | Server hostname | `0.0.0.0` |
 | `AZURE_KEY_VAULT_URL` | Key Vault URL for secrets | - |
-| `AZURE_OPENAI_EXTENDED_GPT_DEPLOYMENT` | Extended context model | - |
+| `AZURE_OPENAI_GPT4_DEPLOYMENT` | Legacy analysis model (fallback) | - |
+| `AZURE_OPENAI_EXTENDED_GPT_DEPLOYMENT` | Extended context model (gpt-41, 1M tokens) | - |
 | `NEXT_TELEMETRY_DISABLED` | Disable Next.js telemetry | `1` |
 
 See [ENV_SETUP.md](./lib/docs/ENV_SETUP.md) for complete documentation.
