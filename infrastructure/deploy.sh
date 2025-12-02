@@ -31,8 +31,10 @@ NC='\033[0m' # No Color
 ENVIRONMENT="${1:-dev}"
 BUILD_IMAGE=false
 PUSH_IMAGE=false
-LOCATION="eastus"
 BASE_NAME="mtranscriber"
+
+# Target resource group (existing)
+RESOURCE_GROUP="rg-aph-cognitive-sandbox-dev-scus-01"
 
 # Parse arguments
 shift || true
@@ -47,8 +49,8 @@ while [[ $# -gt 0 ]]; do
             PUSH_IMAGE=true
             shift
             ;;
-        --location)
-            LOCATION="$2"
+        --resource-group)
+            RESOURCE_GROUP="$2"
             shift 2
             ;;
         *)
@@ -67,10 +69,10 @@ fi
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Meeting Transcriber - Azure Deployment${NC}"
 echo -e "${BLUE}========================================${NC}"
-echo -e "Environment: ${GREEN}$ENVIRONMENT${NC}"
-echo -e "Location:    ${GREEN}$LOCATION${NC}"
-echo -e "Build Image: ${GREEN}$BUILD_IMAGE${NC}"
-echo -e "Push Image:  ${GREEN}$PUSH_IMAGE${NC}"
+echo -e "Environment:    ${GREEN}$ENVIRONMENT${NC}"
+echo -e "Resource Group: ${GREEN}$RESOURCE_GROUP${NC}"
+echo -e "Build Image:    ${GREEN}$BUILD_IMAGE${NC}"
+echo -e "Push Image:     ${GREEN}$PUSH_IMAGE${NC}"
 echo ""
 
 # Check prerequisites
@@ -89,10 +91,19 @@ fi
 # Get current Azure context
 SUBSCRIPTION=$(az account show --query name -o tsv)
 echo -e "Subscription: ${GREEN}$SUBSCRIPTION${NC}"
+
+# Verify resource group exists
+if ! az group show --name "$RESOURCE_GROUP" &> /dev/null; then
+    echo -e "${RED}Error: Resource group '$RESOURCE_GROUP' not found${NC}"
+    exit 1
+fi
+
+RG_LOCATION=$(az group show --name "$RESOURCE_GROUP" --query location -o tsv)
+echo -e "RG Location:  ${GREEN}$RG_LOCATION${NC}"
 echo ""
 
 # Confirm deployment
-read -p "Deploy to $ENVIRONMENT in $SUBSCRIPTION? (y/N) " -n 1 -r
+read -p "Deploy to $ENVIRONMENT in $RESOURCE_GROUP? (y/N) " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo -e "${YELLOW}Deployment cancelled${NC}"
@@ -112,24 +123,25 @@ echo -e "${YELLOW}Deploying infrastructure...${NC}"
 
 DEPLOYMENT_NAME="mtranscriber-${ENVIRONMENT}-$(date +%Y%m%d%H%M%S)"
 
-az deployment sub create \
+az deployment group create \
     --name "$DEPLOYMENT_NAME" \
-    --location "$LOCATION" \
+    --resource-group "$RESOURCE_GROUP" \
     --template-file main.bicep \
-    --parameters "@parameters/${ENVIRONMENT}.bicepparam" \
+    --parameters "parameters/${ENVIRONMENT}.bicepparam" \
     --output table
 
 # Get deployment outputs
 echo ""
 echo -e "${YELLOW}Getting deployment outputs...${NC}"
 
-RESOURCE_GROUP="rg-${BASE_NAME}-${ENVIRONMENT}"
-ACR_NAME=$(az deployment sub show --name "$DEPLOYMENT_NAME" --query 'properties.outputs.containerRegistryLoginServer.value' -o tsv 2>/dev/null || echo "")
-APP_URL=$(az deployment sub show --name "$DEPLOYMENT_NAME" --query 'properties.outputs.containerAppUrl.value' -o tsv 2>/dev/null || echo "")
+ACR_NAME=$(az deployment group show --name "$DEPLOYMENT_NAME" --resource-group "$RESOURCE_GROUP" --query 'properties.outputs.containerRegistryLoginServer.value' -o tsv 2>/dev/null || echo "")
+APP_URL=$(az deployment group show --name "$DEPLOYMENT_NAME" --resource-group "$RESOURCE_GROUP" --query 'properties.outputs.containerAppUrl.value' -o tsv 2>/dev/null || echo "")
+KEY_VAULT_URI=$(az deployment group show --name "$DEPLOYMENT_NAME" --resource-group "$RESOURCE_GROUP" --query 'properties.outputs.keyVaultUri.value' -o tsv 2>/dev/null || echo "")
 
 echo -e "Resource Group: ${GREEN}$RESOURCE_GROUP${NC}"
 echo -e "ACR Server:     ${GREEN}$ACR_NAME${NC}"
 echo -e "App URL:        ${GREEN}$APP_URL${NC}"
+echo -e "Key Vault:      ${GREEN}$KEY_VAULT_URI${NC}"
 
 # ============================================================================
 # Build and Push Docker Image (if requested)
@@ -174,16 +186,24 @@ fi
 # Summary
 # ============================================================================
 
+# Extract Key Vault name from URI
+KV_NAME=""
+if [[ -n "$KEY_VAULT_URI" ]]; then
+    KV_NAME=$(echo "$KEY_VAULT_URI" | sed -n 's|https://\([^.]*\)\.vault\.azure\.net/|\1|p')
+fi
+
 echo ""
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}Deployment Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo -e "Next steps:"
-echo -e "1. Add secrets to Key Vault:"
-echo -e "   ${BLUE}az keyvault secret set --vault-name kv-${BASE_NAME}-${ENVIRONMENT} --name azure-openai-api-key --value 'YOUR_KEY'${NC}"
-echo -e "   ${BLUE}az keyvault secret set --vault-name kv-${BASE_NAME}-${ENVIRONMENT} --name azure-openai-endpoint --value 'YOUR_ENDPOINT'${NC}"
-echo ""
+if [[ -n "$KV_NAME" ]]; then
+    echo -e "1. Add secrets to Key Vault:"
+    echo -e "   ${BLUE}az keyvault secret set --vault-name $KV_NAME --name azure-openai-api-key --value 'YOUR_KEY'${NC}"
+    echo -e "   ${BLUE}az keyvault secret set --vault-name $KV_NAME --name azure-openai-endpoint --value 'YOUR_ENDPOINT'${NC}"
+    echo ""
+fi
 echo -e "2. Push your Docker image:"
 echo -e "   ${BLUE}./deploy.sh ${ENVIRONMENT} --push${NC}"
 echo ""

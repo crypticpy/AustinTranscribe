@@ -40,7 +40,7 @@ param secretEnvironmentVariables array = []
 @description('Minimum replicas')
 @minValue(0)
 @maxValue(30)
-param minReplicas int = 0
+param minReplicas int = 1
 
 @description('Maximum replicas')
 @minValue(1)
@@ -53,6 +53,9 @@ param cpu string = '0.5'
 @description('Memory allocation')
 param memory string = '1Gi'
 
+@description('Whether ingress is external (public) or internal (VNet only)')
+param externalIngress bool = false
+
 // ============================================================================
 // Variables
 // ============================================================================
@@ -60,14 +63,14 @@ param memory string = '1Gi'
 var imageName = '${containerRegistryLoginServer}/meeting-transcriber:${imageTag}'
 var useKeyVault = !empty(keyVaultUri)
 
+// Transform secret environment variables to proper format
+var secretEnvVarsFormatted = [for secretEnvVar in secretEnvironmentVariables: {
+  name: secretEnvVar.name
+  secretRef: secretEnvVar.secretRef
+}]
+
 // Build combined environment variables
-var allEnvVars = concat(
-  environmentVariables,
-  [for secretEnvVar in secretEnvironmentVariables: {
-    name: secretEnvVar.name
-    secretRef: secretEnvVar.secretRef
-  }]
-)
+var allEnvVars = concat(environmentVariables, secretEnvVarsFormatted)
 
 // ============================================================================
 // Container App
@@ -85,7 +88,7 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: true
+        external: externalIngress
         targetPort: 3000
         transport: 'http'
         allowInsecure: false

@@ -11,13 +11,13 @@
 // - Log Analytics Workspace (for monitoring)
 //
 // Usage:
-//   az deployment sub create \
-//     --location eastus \
+//   az deployment group create \
+//     --resource-group rg-aph-cognitive-sandbox-dev-scus-01 \
 //     --template-file main.bicep \
-//     --parameters @parameters/prod.bicepparam
+//     --parameters parameters/prod.bicepparam
 // ============================================================================
 
-targetScope = 'subscription'
+// Deploys to resource group scope (default)
 
 // ============================================================================
 // Parameters
@@ -27,8 +27,8 @@ targetScope = 'subscription'
 @allowed(['dev', 'staging', 'prod'])
 param environment string = 'dev'
 
-@description('Azure region for all resources')
-param location string = 'eastus'
+@description('Azure region for all resources (defaults to resource group location)')
+param location string = resourceGroup().location
 
 @description('Base name for all resources')
 @minLength(3)
@@ -69,22 +69,13 @@ param tags object = {
 // Variables
 // ============================================================================
 
-var resourceGroupName = 'rg-${baseName}-${environment}'
 var acrName = replace('acr${baseName}${environment}', '-', '')
-var keyVaultName = 'kv-${baseName}-${environment}'
+// Key Vault names must be 3-24 characters. Use shorter environment suffix.
+var envSuffix = environment == 'staging' ? 'stg' : environment == 'prod' ? 'prd' : 'dev'
+var keyVaultName = 'kv-${take(baseName, 15)}-${envSuffix}'
 var containerAppEnvName = 'cae-${baseName}-${environment}'
 var containerAppName = 'ca-${baseName}-${environment}'
 var logAnalyticsName = 'log-${baseName}-${environment}'
-
-// ============================================================================
-// Resource Group
-// ============================================================================
-
-resource rg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
-  name: resourceGroupName
-  location: location
-  tags: tags
-}
 
 // ============================================================================
 // Log Analytics Workspace
@@ -92,7 +83,6 @@ resource rg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
 
 module logAnalytics 'modules/log-analytics.bicep' = {
   name: 'logAnalytics'
-  scope: rg
   params: {
     name: logAnalyticsName
     location: location
@@ -106,7 +96,6 @@ module logAnalytics 'modules/log-analytics.bicep' = {
 
 module acr 'modules/container-registry.bicep' = {
   name: 'containerRegistry'
-  scope: rg
   params: {
     name: acrName
     location: location
@@ -121,7 +110,6 @@ module acr 'modules/container-registry.bicep' = {
 
 module keyVault 'modules/key-vault.bicep' = if (enableKeyVault) {
   name: 'keyVault'
-  scope: rg
   params: {
     name: keyVaultName
     location: location
@@ -136,7 +124,6 @@ module keyVault 'modules/key-vault.bicep' = if (enableKeyVault) {
 
 module containerAppEnv 'modules/container-app-environment.bicep' = {
   name: 'containerAppEnvironment'
-  scope: rg
   params: {
     name: containerAppEnvName
     location: location
@@ -152,7 +139,6 @@ module containerAppEnv 'modules/container-app-environment.bicep' = {
 
 module containerApp 'modules/container-app.bicep' = {
   name: 'containerApp'
-  scope: rg
   params: {
     name: containerAppName
     location: location
@@ -161,7 +147,7 @@ module containerApp 'modules/container-app.bicep' = {
     containerRegistryName: acr.outputs.registryName
     containerRegistryLoginServer: acr.outputs.loginServer
     imageTag: imageTag
-    keyVaultUri: enableKeyVault ? keyVault.outputs.vaultUri : ''
+    keyVaultUri: enableKeyVault ? keyVault!.outputs.vaultUri : ''
 
     // Environment variables (non-secrets go here)
     environmentVariables: [
@@ -178,7 +164,7 @@ module containerApp 'modules/container-app.bicep' = {
         value: azureOpenAIWhisperDeployment
       }
       {
-        name: 'AZURE_OPENAI_GPT5_DEPLOYMENT'
+        name: 'AZURE_OPENAI_GPT4_DEPLOYMENT'
         value: azureOpenAIGPTDeployment
       }
     ]
@@ -187,12 +173,12 @@ module containerApp 'modules/container-app.bicep' = {
     secrets: enableKeyVault ? [
       {
         name: 'azure-openai-api-key'
-        keyVaultUrl: '${keyVault.outputs.vaultUri}secrets/azure-openai-api-key'
+        keyVaultUrl: '${keyVault!.outputs.vaultUri}secrets/azure-openai-api-key'
         identity: 'system'
       }
       {
         name: 'azure-openai-endpoint'
-        keyVaultUrl: '${keyVault.outputs.vaultUri}secrets/azure-openai-endpoint'
+        keyVaultUrl: '${keyVault!.outputs.vaultUri}secrets/azure-openai-endpoint'
         identity: 'system'
       }
     ] : [
@@ -224,8 +210,8 @@ module containerApp 'modules/container-app.bicep' = {
 // Outputs
 // ============================================================================
 
-output resourceGroupName string = rg.name
+output resourceGroupName string = resourceGroup().name
 output containerRegistryLoginServer string = acr.outputs.loginServer
 output containerAppFqdn string = containerApp.outputs.fqdn
 output containerAppUrl string = 'https://${containerApp.outputs.fqdn}'
-output keyVaultUri string = enableKeyVault ? keyVault.outputs.vaultUri : ''
+output keyVaultUri string = enableKeyVault ? keyVault!.outputs.vaultUri : ''
